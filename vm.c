@@ -44,7 +44,7 @@ int base(int *pas, int BP, int L) {
 int main(int argc, char *argv[]) {
 
 	// init program execution (run-time) env
-	int PC = 0, BP = 60, SP = 500, DP = 59, GP = 60;
+	int PC = 0, BP, SP = 500, DP, GP;
 	int *pas = malloc(MAX_PAS_LENGTH * sizeof(int));
 	int *IR = malloc(3 * sizeof(int));
 
@@ -58,17 +58,54 @@ int main(int argc, char *argv[]) {
 	// close program
 	fclose(fin);
 
-	// start at the beginning of the program
+	// program set-up
+	DP = PC;
+	GP = PC + 1;
+	BP = PC + 1;
 	PC = 0;
 
-	// header output
-	printf("\t\tPC\tBP\tSP\tDP\tdata\n");
+	// output header and initial values
+	printf("\t\t\tPC\tBP\tSP\tDP\tdata\n");
+	printf("Initial values:\t\t%d\t%d\t%d\t%d\n", PC, BP, SP, DP);
 
 	int halt_flag = 1;
 	while (halt_flag == 0) {
+
 		// FETCH
+		int OP = pas[PC], L = pas[PC + 1], M = pas[PC + 2];
+
+		switch (OP) {
+			case 1:
+				break;
+
+			case 2:
+				break;
+
+			case 3:
+				break;
+
+			case 4:
+				break;
+
+			case 5:
+				break;
+
+			case 6:
+				break;
+
+			case 7:
+				break;
+
+			case 8:
+				break;
+
+			case 9:
+				break;
+		}
 
 		// EXECUTE
+
+		PC += 3;
 	}
 
 	// free memory

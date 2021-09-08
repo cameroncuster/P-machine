@@ -4,7 +4,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// maximum process address space size
 const int MAX_PAS_LENGTH = 501;
+
+// hard coded operation names one-based
+const char *opnames[] = {"", "LIT", "OPR", "LOD", "STO", "CAL", "INC", "JMP",
+	"JPC", "SYS"};
 
 // print function
 void print_execution(int line, char *opname, int *IR, int PC, int BP, int SP,
@@ -39,17 +44,33 @@ int base(int *pas, int BP, int L) {
 int main(int argc, char *argv[]) {
 
 	// init program execution (run-time) env
-	int PC = 0, BP = 60, SP = 500, DP = 59, GP;
-	int *pas = (int *)malloc(MAX_PAS_LENGTH * sizeof(int));
+	int PC = 0, BP = 60, SP = 500, DP = 59, GP = 60;
+	int *pas = malloc(MAX_PAS_LENGTH * sizeof(int));
+	int *IR = malloc(3 * sizeof(int));
 
 	// program input
-	FILE *fin = fopen(argv[0], "r");
+	FILE *fin = fopen(argv[1], "r");
 
+	// header output
 	printf("\t\tPC\tBP\tSP\tDP\tdata\n");
 
-	// execution
-	int OP, L, M;
-	while (fscanf(fin, "%d %d %d", &OP, &L, &M) != EOF) {
+	// read the program into the text section of the process address space
+	while (fscanf(fin, "%d %d %d", &pas[PC], &pas[PC + 1], &pas[PC + 2]) != EOF)
+		PC += 3;
+
+	int end = PC;
+
+	PC = 0; // start at the beginning of the program
+
+	// test the program was read correctly
+	/*
+	for (; PC < end; PC += 3)
+		printf("%d\t%d\t%d\n", pas[PC], pas[PC + 1], pas[PC + 2]);
+	PC = 0;
+	*/
+
+	int halt_flag = 1;
+	while (halt_flag == 0) {
 		// FETCH
 
 		// EXECUTE
@@ -57,4 +78,8 @@ int main(int argc, char *argv[]) {
 
 	// close program
 	fclose(fin);
+
+	// free memory
+	free(pas);
+	free(IR);
 }

@@ -72,6 +72,7 @@ int main(int argc, char *argv[]) {
 	while (halt_flag == 1) {
 
 		// FETCH
+		int line = PC;
 		int OP = pas[PC], L = pas[PC + 1], M = pas[PC + 2];
 
 		// EXECUTE
@@ -342,6 +343,9 @@ int main(int argc, char *argv[]) {
 				}
 				break;
 		}
+
+		// print the state of the executing program
+		print_execution(line, opnames[OP], IR, PC, BP, SP, DP, pas, GP);
 
 		// increment the program counter to the next instruction
 		PC += 3;

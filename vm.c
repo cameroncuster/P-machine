@@ -51,23 +51,18 @@ int main(int argc, char *argv[]) {
 	// program input
 	FILE *fin = fopen(argv[1], "r");
 
-	// header output
-	printf("\t\tPC\tBP\tSP\tDP\tdata\n");
-
 	// read the program into the text section of the process address space
 	while (fscanf(fin, "%d %d %d", &pas[PC], &pas[PC + 1], &pas[PC + 2]) != EOF)
 		PC += 3;
 
-	int end = PC;
+	// close program
+	fclose(fin);
 
-	PC = 0; // start at the beginning of the program
-
-	// test the program was read correctly
-	/*
-	for (; PC < end; PC += 3)
-		printf("%d\t%d\t%d\n", pas[PC], pas[PC + 1], pas[PC + 2]);
+	// start at the beginning of the program
 	PC = 0;
-	*/
+
+	// header output
+	printf("\t\tPC\tBP\tSP\tDP\tdata\n");
 
 	int halt_flag = 1;
 	while (halt_flag == 0) {
@@ -75,9 +70,6 @@ int main(int argc, char *argv[]) {
 
 		// EXECUTE
 	}
-
-	// close program
-	fclose(fin);
 
 	// free memory
 	free(pas);

@@ -2,6 +2,7 @@
    Student Name: Cameron Custer
  */
 #include <stdio.h>
+#include <stdlib.h>
 
 const int MAX_PAS_LENGTH = 501;
 
@@ -38,10 +39,21 @@ int base(int *pas, int BP, int L) {
 int main(int argc, char *argv[]) {
 
 	// init program execution (run-time) env
-	int PC = 0, BP = 60, SP = 500, DP = 59, *pas, GP;
+	int PC = 0, BP = 60, SP = 500, DP = 59, GP;
+	int *pas = (int *)malloc(MAX_PAS_LENGTH * sizeof(int));
 
 	// program input
 	FILE *fin = fopen(argv[0], "r");
+
+	printf("\t\tPC\tBP\tSP\tDP\tdata\n");
+
+	// execution
+	int OP, L, M;
+	while (fscanf(fin, "%d %d %d", &OP, &L, &M) != EOF) {
+		// FETCH
+
+		// EXECUTE
+	}
 
 	// close program
 	fclose(fin);

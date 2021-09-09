@@ -367,7 +367,8 @@ int main(int argc, char *argv[]) {
 
 		// print the state of the executing program
 		if (IR[0] == 2)
-			print_execution(line, opr_opnames[IR[2]], IR, PC, BP, SP, DP, pas, GP);
+			print_execution(line, opr_opnames[IR[2]], IR, PC, BP, SP, DP, pas,
+					GP);
 		else
 			print_execution(line, opnames[IR[0]], IR, PC, BP, SP, DP, pas, GP);
 	}

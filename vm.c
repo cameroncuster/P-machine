@@ -75,6 +75,7 @@ int main(int argc, char *argv[]) {
 
 		// FETCH
 		int jmpd = 0;
+		int line = PC / 3;
 		IR[0] = pas[PC], IR[1] = pas[PC + 1], IR[2] = pas[PC + 2];
 
 		// EXECUTE
@@ -303,7 +304,6 @@ int main(int argc, char *argv[]) {
 			// JMP
 			case 7:
 				PC = IR[2];
-				printf("PC %d \n", PC);
 
 				jmpd = 1;
 				break;
@@ -367,8 +367,8 @@ int main(int argc, char *argv[]) {
 
 		// print the state of the executing program
 		if (IR[0] == 2)
-			print_execution(PC / 3, opr_opnames[IR[2]], IR, PC, BP, SP, DP, pas, GP);
+			print_execution(line, opr_opnames[IR[2]], IR, PC, BP, SP, DP, pas, GP);
 		else
-			print_execution(PC / 3, opnames[IR[0]], IR, PC, BP, SP, DP, pas, GP);
+			print_execution(line, opnames[IR[0]], IR, PC, BP, SP, DP, pas, GP);
 	}
 }

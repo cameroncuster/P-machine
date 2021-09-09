@@ -7,9 +7,12 @@
 // maximum process address space size
 const int MAX_PAS_LENGTH = 501;
 
-// hard coded operation names one-based
+// hard coded operation names
 const char *opnames[] = {"", "LIT", "OPR", "LOD", "STO", "CAL", "INC", "JMP",
 	"JPC", "SYS"};
+
+const char *opr_opnames[] = {"RTN", "NEG", "ADD", "SUB", "MUL", "DIV", "ODD",
+	"MOD", "EQL", "NEQ", "LSS", "LEQ", "GTR", "GEQ"};
 
 // print function
 void print_execution(int line, char *opname, int *IR, int PC, int BP, int SP,
@@ -65,33 +68,33 @@ int main(int argc, char *argv[]) {
 	PC = 0;
 
 	// output header and initial values
-	printf("\t\t\tPC\tBP\tSP\tDP\tdata\n");
-	printf("Initial values:\t\t%d\t%d\t%d\t%d\n", PC, BP, SP, DP);
+	printf("\t\t\t\tPC\tBP\tSP\tDP\tdata\n");
+	printf("Initial values:\t\t\t%d\t%d\t%d\t%d\n", PC, BP, SP, DP);
 
 	int halt_flag = 1;
 	while (halt_flag == 1) {
 
 		// FETCH
-		int line = PC;
-		int OP = pas[PC], L = pas[PC + 1], M = pas[PC + 2];
+		int jmpd = 0;
+		IR[0] = pas[PC], IR[1] = pas[PC + 1], IR[2] = pas[PC + 2];
 
 		// EXECUTE
-		switch (OP) {
+		switch (IR[0]) {
 			// LIT
 			case 1:
 				if (BP == GP) {
 					DP += 1;
-					pas[DP] = M;
+					pas[DP] = IR[2];
 				}
 				else {
 					SP -= 1;
-					pas[SP] = M;
+					pas[SP] = IR[2];
 				}
 				break;
 
 			// OPR
 			case 2:
-				switch (M) {
+				switch (IR[2]) {
 					// RTN
 					case 0:
 						SP = BP + 1;
@@ -249,83 +252,95 @@ int main(int argc, char *argv[]) {
 
 			// LOD
 			case 3:
-				if (base(pas, BP, L) == GP) {
+				if (BP == GP) {
 					DP++;
-					pas[DP] = pas[GP + M];
+					pas[DP] = pas[GP + IR[2]];
 				}
 				else {
-					// this is ambiguous
 					SP--;
-					pas[SP] = pas[base(pas, BP, L) - M];
+					if (base(pas, BP, IR[1]) == GP)
+						pas[SP] = pas[GP + IR[2]];
+					else
+						pas[SP] = pas[base(pas, BP, IR[1]) - IR[2]];
 				}
 				break;
 
 			// STO
 			case 4:
-				if (base(pas, BP, L) == GP) {
-					pas[GP + M] = pas[DP];
+				if (BP == GP) {
+					pas[GP + IR[2]] = pas[DP];
 					DP--;
 				}
 				else {
-					// this is ambiguous
-					pas[base(pas, BP, L) - M] = pas[SP];
+					if (base(pas, BP, IR[1]) == GP)
+						pas[GP + IR[2]] = pas[SP];
+					else
+						pas[base(pas, BP, IR[1]) - IR[2]] = pas[SP];
 					SP++;
 				}
 				break;
 
 			// CAL
 			case 5:
-				pas[SP - 1] = base(pas, BP, L); // static link (SL)
+				pas[SP - 1] = base(pas, BP, IR[1]); // static link (SL)
 				pas[SP - 2] = BP; // dynamic link (DL)
 				pas[SP - 3] = PC; // return address (RA)
 				BP = SP - 1;
-				PC = M;
+				PC = IR[2];
+
+				jmpd = 1;
 				break;
 
 			// INC
 			case 6:
 				if (BP == GP)
-					DP += M;
+					DP += IR[2];
 				else
-					SP -= M;
+					SP -= IR[2];
 				break;
 
 			// JMP
 			case 7:
-				PC = M;
+				PC = IR[2];
+				printf("PC %d \n", PC);
+
+				jmpd = 1;
 				break;
 
 			// JPC
 			case 8:
 				if (BP == GP) {
 					if (pas[DP] == 0)
-						PC = M;
+						PC = IR[2];
 					DP--;
 				}
 				else {
 					if (pas[SP] == 0)
-						PC = M;
+						PC = IR[2];
 					SP++;
 				}
+
+				jmpd = 1;
 				break;
 
 			// SYS
 			case 9:
-				switch (M) {
+				switch (IR[2]) {
 					// SYS 0, 1
 					case 1:
 						if (BP == GP) {
-							printf("%d", pas[DP]);
+							printf("Top of Stack Value: %d\n", pas[DP]);
 							DP--;
 						}
 						else {
-							printf("%d", pas[SP]);
+							printf("Top of Stack Value: %d\n", pas[SP]);
 							SP++;
 						}
 						break;
 
 					// SYS 0, 2
 					case 2:
+						printf("Please Enter an Integer: ");
 						if (BP == GP) {
 							DP++;
 							scanf("%d", &pas[DP]);
@@ -334,6 +349,7 @@ int main(int argc, char *argv[]) {
 							SP--;
 							scanf("%d", &pas[SP]);
 						}
+						printf("\n");
 						break;
 
 					// SYS 0, 3
@@ -344,11 +360,15 @@ int main(int argc, char *argv[]) {
 				break;
 		}
 
-		// print the state of the executing program
-		print_execution(line, opnames[OP], IR, PC, BP, SP, DP, pas, GP);
-
 		// increment the program counter to the next instruction
-		PC += 3;
+		if (jmpd == 0)
+			PC += 3;
+
+		// print the state of the executing program
+		if (IR[0] == 2)
+			print_execution(PC / 3, opr_opnames[IR[2]], IR, PC, BP, SP, DP, pas, GP);
+		else
+			print_execution(PC / 3, opnames[IR[0]], IR, PC, BP, SP, DP, pas, GP);
 	}
 
 	// free memory

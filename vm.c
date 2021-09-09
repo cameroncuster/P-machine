@@ -2,10 +2,9 @@
    Student Name: Cameron Custer
  */
 #include <stdio.h>
-#include <stdlib.h>
 
 // maximum process address space size
-const int MAX_PAS_LENGTH = 501;
+const int MAX_PAS_LENGTH = 500;
 
 // hard coded operation names
 const char *opnames[] = {"", "LIT", "OPR", "LOD", "STO", "CAL", "INC", "JMP",
@@ -15,8 +14,8 @@ const char *opr_opnames[] = {"RTN", "NEG", "ADD", "SUB", "MUL", "DIV", "ODD",
 	"MOD", "EQL", "NEQ", "LSS", "LEQ", "GTR", "GEQ"};
 
 // print function
-void print_execution(int line, char *opname, int *IR, int PC, int BP, int SP,
-		int DP, int *pas, int GP) {
+void print_execution(int line, const char *opname, int *IR, int PC, int BP,
+		int SP, int DP, int *pas, int GP) {
 
 	// print out instruction and registers
 	printf("%2d\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t", line, opname, IR[1], IR[2], PC,
@@ -48,8 +47,8 @@ int main(int argc, char *argv[]) {
 
 	// init program execution (run-time) env
 	int PC = 0, BP, SP = 500, DP, GP;
-	int *pas = malloc(MAX_PAS_LENGTH * sizeof(int));
-	int *IR = malloc(3 * sizeof(int));
+	int pas[MAX_PAS_LENGTH];
+	int IR[3];
 
 	// program input
 	FILE *fin = fopen(argv[1], "r");
@@ -100,6 +99,8 @@ int main(int argc, char *argv[]) {
 						SP = BP + 1;
 						BP = pas[SP - 2];
 						PC = pas[SP - 3];
+
+						jmpd = 1;
 						break;
 
 					// NEG
@@ -284,7 +285,7 @@ int main(int argc, char *argv[]) {
 			case 5:
 				pas[SP - 1] = base(pas, BP, IR[1]); // static link (SL)
 				pas[SP - 2] = BP; // dynamic link (DL)
-				pas[SP - 3] = PC; // return address (RA)
+				pas[SP - 3] = PC + 3; // return address (RA)
 				BP = SP - 1;
 				PC = IR[2];
 
@@ -370,8 +371,4 @@ int main(int argc, char *argv[]) {
 		else
 			print_execution(PC / 3, opnames[IR[0]], IR, PC, BP, SP, DP, pas, GP);
 	}
-
-	// free memory
-	free(pas);
-	free(IR);
 }

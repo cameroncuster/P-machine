@@ -72,7 +72,6 @@ int main(int argc, char *argv[]) {
 	while (halt_flag == 1) {
 
 		// FETCH
-
 		// one instruction (3 values) per line
 		int line = PC / 3;
 

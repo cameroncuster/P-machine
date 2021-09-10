@@ -1,6 +1,4 @@
-/* Program Header
-   Student Name: Cameron Custer
- */
+// Student Name: Cameron Custer
 #include <stdio.h>
 
 // maximum process address space size
@@ -74,9 +72,14 @@ int main(int argc, char *argv[]) {
 	while (halt_flag == 1) {
 
 		// FETCH
-		int jmpd = 0;
+
+		// one instruction (3 values) per line
 		int line = PC / 3;
+
 		IR[0] = pas[PC], IR[1] = pas[PC + 1], IR[2] = pas[PC + 2];
+
+		// increment the program counter to the next instruction
+		PC += 3;
 
 		// EXECUTE
 		switch (IR[0]) {
@@ -92,7 +95,7 @@ int main(int argc, char *argv[]) {
 				}
 				break;
 
-			// OPR
+				// OPR
 			case 2:
 				switch (IR[2]) {
 					// RTN
@@ -100,11 +103,9 @@ int main(int argc, char *argv[]) {
 						SP = BP + 1;
 						BP = pas[SP - 2];
 						PC = pas[SP - 3];
-
-						jmpd = 1;
 						break;
 
-					// NEG
+						// NEG
 					case 1:
 						if (BP == GP)
 							pas[DP] *= -1;
@@ -112,7 +113,7 @@ int main(int argc, char *argv[]) {
 							pas[SP] *= -1;
 						break;
 
-					// ADD
+						// ADD
 					case 2:
 						if (BP == GP)
 							pas[DP] += pas[DP + 1];
@@ -122,7 +123,7 @@ int main(int argc, char *argv[]) {
 						}
 						break;
 
-					// SUB
+						// SUB
 					case 3:
 						if (BP == GP) {
 							DP--;
@@ -134,7 +135,7 @@ int main(int argc, char *argv[]) {
 						}
 						break;
 
-					// MUL
+						// MUL
 					case 4:
 						if (BP == GP) {
 							DP--;
@@ -146,7 +147,7 @@ int main(int argc, char *argv[]) {
 						}
 						break;
 
-					// DIV
+						// DIV
 					case 5:
 						if (BP == GP) {
 							DP--;
@@ -158,7 +159,7 @@ int main(int argc, char *argv[]) {
 						}
 						break;
 
-					// ODD
+						// ODD
 					case 6:
 						if (BP == GP)
 							pas[DP] %= 2;
@@ -166,7 +167,7 @@ int main(int argc, char *argv[]) {
 							pas[SP] %= 2;
 						break;
 
-					// MOD
+						// MOD
 					case 7:
 						if (BP == GP) {
 							DP--;
@@ -178,7 +179,7 @@ int main(int argc, char *argv[]) {
 						}
 						break;
 
-					// EQL
+						// EQL
 					case 8:
 						if (BP == GP) {
 							DP--;
@@ -190,7 +191,7 @@ int main(int argc, char *argv[]) {
 						}
 						break;
 
-					// NEQ
+						// NEQ
 					case 9:
 						if (BP == GP) {
 							DP--;
@@ -202,7 +203,7 @@ int main(int argc, char *argv[]) {
 						}
 						break;
 
-					// LSS
+						// LSS
 					case 10:
 						if (BP == GP) {
 							DP--;
@@ -214,7 +215,7 @@ int main(int argc, char *argv[]) {
 						}
 						break;
 
-					// LEQ
+						// LEQ
 					case 11:
 						if (BP == GP) {
 							DP--;
@@ -226,7 +227,7 @@ int main(int argc, char *argv[]) {
 						}
 						break;
 
-					// GTR
+						// GTR
 					case 12:
 						if (BP == GP) {
 							DP--;
@@ -238,7 +239,7 @@ int main(int argc, char *argv[]) {
 						}
 						break;
 
-					// GEQ
+						// GEQ
 					case 13:
 						if (BP == GP) {
 							DP--;
@@ -252,7 +253,7 @@ int main(int argc, char *argv[]) {
 				}
 				break;
 
-			// LOD
+				// LOD
 			case 3:
 				if (BP == GP) {
 					DP++;
@@ -267,7 +268,7 @@ int main(int argc, char *argv[]) {
 				}
 				break;
 
-			// STO
+				// STO
 			case 4:
 				if (BP == GP) {
 					pas[GP + IR[2]] = pas[DP];
@@ -282,18 +283,16 @@ int main(int argc, char *argv[]) {
 				}
 				break;
 
-			// CAL
+				// CAL
 			case 5:
 				pas[SP - 1] = base(pas, BP, IR[1]); // static link (SL)
 				pas[SP - 2] = BP; // dynamic link (DL)
-				pas[SP - 3] = PC + 3; // return address (RA)
+				pas[SP - 3] = PC; // return address (RA)
 				BP = SP - 1;
 				PC = IR[2];
-
-				jmpd = 1;
 				break;
 
-			// INC
+				// INC
 			case 6:
 				if (BP == GP)
 					DP += IR[2];
@@ -301,14 +300,12 @@ int main(int argc, char *argv[]) {
 					SP -= IR[2];
 				break;
 
-			// JMP
+				// JMP
 			case 7:
 				PC = IR[2];
-
-				jmpd = 1;
 				break;
 
-			// JPC
+				// JPC
 			case 8:
 				if (BP == GP) {
 					if (pas[DP] == 0)
@@ -320,11 +317,9 @@ int main(int argc, char *argv[]) {
 						PC = IR[2];
 					SP++;
 				}
-
-				jmpd = 1;
 				break;
 
-			// SYS
+				// SYS
 			case 9:
 				switch (IR[2]) {
 					// SYS 0, 1
@@ -339,7 +334,7 @@ int main(int argc, char *argv[]) {
 						}
 						break;
 
-					// SYS 0, 2
+						// SYS 0, 2
 					case 2:
 						printf("Please Enter an Integer: ");
 						if (BP == GP) {
@@ -353,17 +348,13 @@ int main(int argc, char *argv[]) {
 						printf("\n");
 						break;
 
-					// SYS 0, 3
+						// SYS 0, 3
 					case 3:
 						halt_flag = 0;
 						break;
 				}
 				break;
 		}
-
-		// increment the program counter to the next instruction
-		if (jmpd == 0)
-			PC += 3;
 
 		// print the state of the executing program
 		if (IR[0] == 2)

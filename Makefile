@@ -19,7 +19,7 @@ main: $(OBJS)
 	$(LINK) -o $@ $^ $(LIBS)
 
 clean:
-	rm -rf *.o *.d main
+	rm -rf *.out *.o *.d main output.txt
 
 tar: clean
 	tar zcvf P-machine.tgz *.c Makefile README.md
@@ -27,7 +27,7 @@ tar: clean
 help:
 	@echo "	make main	- same as make all"
 	@echo "	make all	- builds the main target"
-	@echo "	make clean	- remove .o .d main"
+	@echo "	make clean	- remove .o .d main *.out output.txt"
 	@echo "	make tar	- make a tarball of the project"
 	@echo "	make help	- this message"
 

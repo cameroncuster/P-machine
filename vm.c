@@ -54,17 +54,17 @@ int main(int argc, char *argv[]) {
 	FILE *fin = fopen(argv[1], "r");
 
 	// read the program into the text section of the process address space
-	while (fscanf(fin, "%d %d %d", &pas[PC], &pas[PC + 1], &pas[PC + 2]) != EOF)
-		PC += 3;
+	int IC = 0;
+	while (fscanf(fin, "%d %d %d", &pas[IC], &pas[IC + 1], &pas[IC + 2]) != EOF)
+		IC += 3;
 
 	// close program
 	fclose(fin);
 
 	// program set-up
-	DP = PC - 1;
-	GP = PC;
-	BP = PC;
-	PC = 0;
+	DP = IC - 1;
+	GP = IC;
+	BP = IC;
 
 	// output header and initial values
 	printf("\t\t\t\tPC\tBP\tSP\tDP\tdata\n");
@@ -116,8 +116,10 @@ int main(int argc, char *argv[]) {
 
 						// ADD
 					case 2:
-						if (BP == GP)
+						if (BP == GP) {
+							DP--;
 							pas[DP] += pas[DP + 1];
+						}
 						else {
 							SP++;
 							pas[SP] += pas[SP - 1];
@@ -346,7 +348,6 @@ int main(int argc, char *argv[]) {
 							SP--;
 							scanf("%d", &pas[SP]);
 						}
-						printf("\n");
 						break;
 
 						// SYS 0, 3

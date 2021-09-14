@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 // maximum process address space size
-const int MAX_PAS_LENGTH = 501;
+const int MAX_PAS_LENGTH = 500;
 
 // hard coded operation names
 const char *opnames[] = {"", "LIT", "OPR", "LOD", "STO", "CAL", "INC", "JMP",

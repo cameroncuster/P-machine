@@ -1,22 +1,59 @@
 // Student Name: Cameron Custer
 #include <stdio.h>
 
+struct Instruction_Register {
+	int OP, L, M;
+};
+
 // maximum process address space size
 const int MAX_PAS_LENGTH = 500;
 
 // hard coded operation names
-const char *opnames[] = {"", "LIT", "OPR", "LOD", "STO", "CAL", "INC", "JMP",
-	"JPC", "SYS"};
+const char *opnames[] = {"",
+	"LIT",
+	"OPR",
+	"LOD",
+	"STO",
+	"CAL",
+	"INC",
+	"JMP",
+	"JPC",
+	"SYS"
+};
 
-const char *opr_opnames[] = {"RTN", "NEG", "ADD", "SUB", "MUL", "DIV", "ODD",
-	"MOD", "EQL", "NEQ", "LSS", "LEQ", "GTR", "GEQ"};
+const char *opr_opnames[] = {
+	"RTN",
+	"NEG",
+	"ADD",
+	"SUB",
+	"MUL",
+	"DIV",
+	"ODD",
+	"MOD",
+	"EQL",
+	"NEQ",
+	"LSS",
+	"LEQ",
+	"GTR",
+	"GEQ"
+};
 
 // print function
-void print_execution(int line, const char *opname, int *IR, int PC, int BP,
-		int SP, int DP, int *pas, int GP) {
+void print_execution(
+		int line,
+		const char *opname,
+		struct Instruction_Register IR,
+		int PC,
+		int BP,
+		int SP,
+		int DP,
+		int *pas,
+		int GP
+		)
+{
 
 	// print out instruction and registers
-	printf("%2d\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t", line, opname, IR[1], IR[2], PC,
+	printf("%2d\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t", line, opname, IR.L, IR.M, PC,
 			BP, SP, DP);
 
 	// print data section
@@ -44,11 +81,9 @@ int base(int *pas, int BP, int L) {
 int main(int argc, char *argv[]) {
 
 	// init program execution (run-time) env
-	int PC = 0, BP, SP = 500, DP, GP;
 	int pas[MAX_PAS_LENGTH];
 	for (int i = 0; i < MAX_PAS_LENGTH; i++)
 		pas[i] = 0;
-	int IR[3];
 
 	// program input
 	FILE *fin = fopen(argv[1], "r");
@@ -62,9 +97,12 @@ int main(int argc, char *argv[]) {
 	fclose(fin);
 
 	// program set-up
-	DP = IC - 1;
-	GP = IC;
-	BP = IC;
+	int GP = IC;				// Global Pointer - Points to DATA Segment
+	int DP = IC - 1;			// Data Pointer - To access variables in Main
+	int FREE = IC + 40;			// FREE points to Heap
+	int BP = IC;				// Points to base of data or activation records
+	int PC = 0;					// Program Counter - Points to next instruction
+	int SP = MAX_PAS_LENGTH;	// Stack Pointer - Points to top of stack
 
 	// output header and initial values
 	printf("\t\t\t\tPC\tBP\tSP\tDP\tdata\n");
@@ -77,28 +115,29 @@ int main(int argc, char *argv[]) {
 		// one instruction (3 values) per line
 		int line = PC / 3;
 
-		IR[0] = pas[PC], IR[1] = pas[PC + 1], IR[2] = pas[PC + 2];
+		struct Instruction_Register IR;
+		IR.OP = pas[PC], IR.L = pas[PC + 1], IR.M = pas[PC + 2];
 
 		// increment the program counter to the next instruction
 		PC += 3;
 
 		// EXECUTE
-		switch (IR[0]) {
+		switch (IR.OP) {
 			// LIT
 			case 1:
 				if (BP == GP) {
 					DP += 1;
-					pas[DP] = IR[2];
+					pas[DP] = IR.M;
 				}
 				else {
 					SP -= 1;
-					pas[SP] = IR[2];
+					pas[SP] = IR.M;
 				}
 				break;
 
 				// OPR
 			case 2:
-				switch (IR[2]) {
+				switch (IR.M) {
 					// RTN
 					case 0:
 						SP = BP + 1;
@@ -260,71 +299,71 @@ int main(int argc, char *argv[]) {
 			case 3:
 				if (BP == GP) {
 					DP++;
-					pas[DP] = pas[GP + IR[2]];
+					pas[DP] = pas[GP + IR.M];
 				}
 				else {
 					SP--;
-					if (base(pas, BP, IR[1]) == GP)
-						pas[SP] = pas[GP + IR[2]];
+					if (base(pas, BP, IR.L) == GP)
+						pas[SP] = pas[GP + IR.M];
 					else
-						pas[SP] = pas[base(pas, BP, IR[1]) - IR[2]];
+						pas[SP] = pas[base(pas, BP, IR.L) - IR.M];
 				}
 				break;
 
 				// STO
 			case 4:
 				if (BP == GP) {
-					pas[GP + IR[2]] = pas[DP];
+					pas[GP + IR.M] = pas[DP];
 					DP--;
 				}
 				else {
-					if (base(pas, BP, IR[1]) == GP)
-						pas[GP + IR[2]] = pas[SP];
+					if (base(pas, BP, IR.L) == GP)
+						pas[GP + IR.M] = pas[SP];
 					else
-						pas[base(pas, BP, IR[1]) - IR[2]] = pas[SP];
+						pas[base(pas, BP, IR.L) - IR.M] = pas[SP];
 					SP++;
 				}
 				break;
 
 				// CAL
 			case 5:
-				pas[SP - 1] = base(pas, BP, IR[1]); // static link (SL)
-				pas[SP - 2] = BP; // dynamic link (DL)
-				pas[SP - 3] = PC; // return address (RA)
+				pas[SP - 1] = base(pas, BP, IR.L);	// static link (SL)
+				pas[SP - 2] = BP;					// dynamic link (DL)
+				pas[SP - 3] = PC;					// return address (RA)
 				BP = SP - 1;
-				PC = IR[2];
+				PC = IR.M;
 				break;
 
 				// INC
 			case 6:
 				if (BP == GP)
-					DP += IR[2];
+					DP += IR.M;
 				else
-					SP -= IR[2];
+					SP -= IR.M;
 				break;
 
 				// JMP
 			case 7:
-				PC = IR[2];
+				PC = IR.M;
 				break;
 
 				// JPC
 			case 8:
 				if (BP == GP) {
 					if (pas[DP] == 0)
-						PC = IR[2];
+						PC = IR.M;
 					DP--;
 				}
 				else {
 					if (pas[SP] == 0)
-						PC = IR[2];
+						PC = IR.M;
 					SP++;
 				}
 				break;
 
 				// SYS
 			case 9:
-				switch (IR[2]) {
+				switch (IR.M) {
 					// SYS 0, 1
 					case 1:
 						if (BP == GP) {
@@ -359,10 +398,10 @@ int main(int argc, char *argv[]) {
 		}
 
 		// print the state of the executing program
-		if (IR[0] == 2)
-			print_execution(line, opr_opnames[IR[2]], IR, PC, BP, SP, DP, pas,
+		if (IR.OP == 2)
+			print_execution(line, opr_opnames[IR.M], IR, PC, BP, SP, DP, pas,
 					GP);
 		else
-			print_execution(line, opnames[IR[0]], IR, PC, BP, SP, DP, pas, GP);
+			print_execution(line, opnames[IR.OP], IR, PC, BP, SP, DP, pas, GP);
 	}
 }

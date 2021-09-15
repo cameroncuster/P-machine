@@ -39,18 +39,9 @@ const char *opr_opnames[] = {
 };
 
 // print function
-void print_execution(
-		int line,
-		const char *opname,
-		struct Instruction_Register IR,
-		int PC,
-		int BP,
-		int SP,
-		int DP,
-		int *pas,
-		int GP
-		)
-{
+void print_execution(int line, const char *opname,
+		struct Instruction_Register IR, int PC, int BP, int SP, int DP,
+		int *pas, int GP) {
 
 	// print out instruction and registers
 	printf("%2d\t%s\t%d\t%d\t%d\t%d\t%d\t%d\t", line, opname, IR.L, IR.M, PC,
@@ -70,8 +61,8 @@ void print_execution(
 
 // Find base L levels down
 int base(int *pas, int BP, int L) {
-	int arb = BP; // arb = activation record base
-	while (L > 0) { // find base L levels down
+	int arb = BP;		// arb = activation record base
+	while (L > 0) {		// find base L levels down
 		arb = pas[arb];
 		L--;
 	}

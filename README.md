@@ -1,11 +1,4 @@
-# Cameron Custer P-machine
+# P-machine (PL/0)
+Implements functionality for a basic instruction architecture.
 
-BUILD Instructions
-```
-% make
-```
-
-EXECUTE Instructions
-```
-% ./main INPUT_FILE_NAME
-```
+Note: Execute the samples for further explanation.

@@ -19,173 +19,213 @@
 #define MAX_IDENT_LEN 11
 #define MAX_NUMBER_LEN 5
 
-// hard coded keywords
+// hard coded keywords and symbols
 const char *keywords[] =
 {
 	"const",
 	"var",
 	"procedure",
-	"call",
+	"begin",
+	"end",
+	"while",
+	"do",
 	"if",
 	"then",
 	"else",
-	"while",
-	"do",
-	"begin",
-	"end",
-	"read",
+	"call",
 	"write",
-	"odd",
-	"=",
+	"read",
+	"0identifier", // place holder for enum token_type translation
+	"0number", // place holder for enum token_type translation
+	":=",
+	"+",
+	"-",
+	"*",
+	"/",
+	"%",
 	"==",
 	"!=",
 	"<",
 	"<=",
 	">",
 	">=",
-	"%",
-	"*",
-	"/",
-	"+",
-	"-",
 	"(",
 	")",
 	",",
 	".",
-	";",
-	":="
+	";"
 };
-
-typedef enum State {
-	space, alpha, digit, symbol
-} State;
 
 lexeme *list;
 int lex_index;
-State state;
-int buff_ptr;
+int size;
 
 void printlexerror(int type);
 void printtokens();
-
-void null_terminate(char buffer[12])
-{
-	for (int i = 0; i < 12; i++)
-		buffer[i] = '\0';
-}
+void push(lexeme frame);
 
 lexeme *lexanalyzer(char *input)
 {
-	state = space;
-	buff_ptr = 0;
-	char buffer[12];
-	null_terminate(buffer);
+	list = malloc(1);
+	lex_index = 0;
+	size = 1;
+
 	for (char c = input[0]; input[c] != '\0'; c++)
 	{
-		if (isspace(input[c]) || iscntrl(input[c]))
-		{
-			switch (state)
-			{
-				case alpha:
-				case digit:
-				case symbol:
-			}
-			state = space;
-		}
+		// ignore white space
+		if (isspace(input[c]) || iscntrl(input[c])) { }
 
 		else if (isalpha(input[c]))
 		{
-			switch (state)
+			// capture the next 12 characters
+			char buff[12] = {'\0'};
+			for (int buff_ptr = 0; isalpha(input[c]); c++, buff_ptr++)
 			{
-				case space:
-					state = alpha;
-					buffer[buff_ptr] = input[c];
-					buff_ptr++;
-					break;
-
-				case digit:
-					printlexerror(2);
-					exit(0);
-
-				case alpha:
-					buffer[buff_ptr] = input[c];
-					buff_ptr++;
-					break;
+				if (buff_ptr == 11)
+				{
+					printlexerror(4);
+					return NULL;
+				}
+				buff[buff_ptr] = input[c];
 			}
+
+			// check for reserved word and move onto the next token
+			int is_keyword = 0;
+			lexeme frame;
+			for (int i = 0; i < 31; i++)
+			{
+				if (strcmp(keywords[i], buff) == 0)
+				{
+					is_keyword = 1;
+					strcpy(frame.name, buff);
+					frame.type = i + 1;
+				}
+			}
+
+			if (!is_keyword)
+			{
+				strcpy(frame.name, buff);
+				frame.type = identsym;
+			}
+
+			push(frame);
 		}
 
 		else if (isdigit(input[c]))
 		{
-			switch (state)
+			// capture the next numeral
+			char buff[12] = {'\0'};
+			for (int buff_ptr = 0; isdigit(input[c]); c++, buff_ptr++)
 			{
-				case alpha:
-					printlexerror(1);
-					exit(0);
-
-				case digit:
-					buffer[buff_ptr] = input[c];
-					buff_ptr++;
-					break;
+				if (buff_ptr == 5)
+				{
+					printlexerror(3);
+					return NULL;
+				}
+				buff[buff_ptr] = input[c];
 			}
+
+			if (isalpha(input[c]))
+			{
+				printlexerror(2);
+				return NULL;
+			}
+
+			lexeme frame;
+			frame.value = atoi(buff);
+			frame.type = numbersym;
+
+			push(frame);
 		}
 
 		else
 		{
-			switch(input[c])
+			lexeme frame;
+			switch (input[c])
 			{
-				case '=':
-					break;
-
-				case '!':
-					break;
-
-				case '<':
-					break;
-
-				case '>':
-					break;
-
-				case '%':
-					break;
-
-				case '*':
-					break;
-
-				case '/':
+				case ':': // ":="
+					frame.type = assignsym;
 					break;
 
 				case '+':
+					frame.type = addsym;
 					break;
 
 				case '-':
+					frame.type = subsym;
+					break;
+
+				case '*':
+					frame.type = multsym;
+					break;
+
+				case '/':
+					// comment
+					if (input[c + 1] == '/')
+						while (input[c] != '\n')
+							c++;
+					else
+					{
+						frame.type = divsym;
+					}
+					break;
+
+				case '%':
+					frame.type = modsym;
+					break;
+
+				case '=': // "=="
+					frame.type = eqlsym;
+					break;
+
+				case '!': // "!="
+					frame.type = neqsym;
+					break;
+
+				case '<': // or "<="
+					if (input[c + 1] == '=')
+						frame.type = leqsym;
+					else
+						frame.type = lsssym;
+					break;
+
+				case '>': // or ">="
+					if (input[c + 1] == '=')
+						frame.type = geqsym;
+					else
+						frame.type = gtrsym;
 					break;
 
 				case '(':
+					frame.type = lparensym;
 					break;
 
 				case ')':
+					frame.type = rparensym;
 					break;
 
 				case ',':
+					frame.type = commasym;
 					break;
 
 				case '.':
+					frame.type = periodsym;
 					break;
 
 				case ';':
-					break;
-
-				case ':':
+					frame.type = semicolonsym;
 					break;
 
 				default:
 					printlexerror(1);
-					exit(0);
+					return NULL;
 			}
+			push(frame);
 		}
 	}
 
-	return NULL;
+	printtokens();
+	return list;
 }
 
 
@@ -330,4 +370,19 @@ void printlexerror(int type)
 
 	free(list);
 	return;
+}
+
+void push(lexeme frame)
+{
+	if (lex_index == size - 1)
+	{
+		size = size * 2;
+		list = realloc(list, size);
+	}
+
+	strcpy(list[lex_index].name, frame.name);
+	list[lex_index].value = frame.value;
+	list[lex_index].type = frame.type;
+
+	lex_index++;
 }

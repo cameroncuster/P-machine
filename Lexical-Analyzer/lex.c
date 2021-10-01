@@ -69,7 +69,7 @@ void nullify();
 
 lexeme *lexanalyzer(char *input)
 {
-	list = malloc(1000000);
+	list = malloc(sizeof(lexeme));
 	lex_index = 0;
 	size = 1;
 
@@ -398,10 +398,10 @@ void printlexerror(int type)
 
 void expand()
 {
-	if (lex_index >= size - 2)
+	if (lex_index >= size)
 	{
 		size *= 2;
-		list = realloc(list, size);
+		list = realloc(list, size * sizeof(lexeme));
 	}
 }
 

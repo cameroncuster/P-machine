@@ -1,13 +1,13 @@
-/* 
-	This is the lex.c file for the UCF Fall 2021 Systems Software Project.
-	For HW2, you must implement the function lexeme *lexanalyzer(char *input).
-	You may add as many constants, global variables, and support functions
-	as you desire.
-	
-	If you choose to alter the printing functions or delete list or lex_index, 
-	you MUST make a note of that in you readme file, otherwise you will lose 
-	5 points.
-*/
+/*
+   This is the lex.c file for the UCF Fall 2021 Systems Software Project.
+   For HW2, you must implement the function lexeme *lexanalyzer(char *input).
+   You may add as many constants, global variables, and support functions
+   as you desire.
+
+   If you choose to alter the printing functions or delete list or lex_index,
+   you MUST make a note of that in you readme file, otherwise you will lose
+   5 points.
+   */
 
 
 #include <stdlib.h>
@@ -19,15 +19,172 @@
 #define MAX_IDENT_LEN 11
 #define MAX_NUMBER_LEN 5
 
+// hard coded keywords
+const char *keywords[] =
+{
+	"const",
+	"var",
+	"procedure",
+	"call",
+	"if",
+	"then",
+	"else",
+	"while",
+	"do",
+	"begin",
+	"end",
+	"read",
+	"write",
+	"odd",
+	"=",
+	"==",
+	"!=",
+	"<",
+	"<=",
+	">",
+	">=",
+	"%",
+	"*",
+	"/",
+	"+",
+	"-",
+	"(",
+	")",
+	",",
+	".",
+	";",
+	":="
+};
+
+typedef enum State {
+	space, alpha, digit, symbol
+} State;
+
 lexeme *list;
 int lex_index;
+State state;
+int buff_ptr;
 
 void printlexerror(int type);
 void printtokens();
 
+void null_terminate(char buffer[12])
+{
+	for (int i = 0; i < 12; i++)
+		buffer[i] = '\0';
+}
 
 lexeme *lexanalyzer(char *input)
 {
+	state = space;
+	buff_ptr = 0;
+	char buffer[12];
+	null_terminate(buffer);
+	for (char c = input[0]; input[c] != '\0'; c++)
+	{
+		if (isspace(input[c]) || iscntrl(input[c]))
+		{
+			switch (state)
+			{
+				case alpha:
+				case digit:
+				case symbol:
+			}
+			state = space;
+		}
+
+		else if (isalpha(input[c]))
+		{
+			switch (state)
+			{
+				case space:
+					state = alpha;
+					buffer[buff_ptr] = input[c];
+					buff_ptr++;
+					break;
+
+				case digit:
+					printlexerror(2);
+					exit(0);
+
+				case alpha:
+					buffer[buff_ptr] = input[c];
+					buff_ptr++;
+					break;
+			}
+		}
+
+		else if (isdigit(input[c]))
+		{
+			switch (state)
+			{
+				case alpha:
+					printlexerror(1);
+					exit(0);
+
+				case digit:
+					buffer[buff_ptr] = input[c];
+					buff_ptr++;
+					break;
+			}
+		}
+
+		else
+		{
+			switch(input[c])
+			{
+				case '=':
+					break;
+
+				case '!':
+					break;
+
+				case '<':
+					break;
+
+				case '>':
+					break;
+
+				case '%':
+					break;
+
+				case '*':
+					break;
+
+				case '/':
+					break;
+
+				case '+':
+					break;
+
+				case '-':
+					break;
+
+				case '(':
+					break;
+
+				case ')':
+					break;
+
+				case ',':
+					break;
+
+				case '.':
+					break;
+
+				case ';':
+					break;
+
+				case ':':
+					break;
+
+				default:
+					printlexerror(1);
+					exit(0);
+			}
+		}
+	}
+
 	return NULL;
 }
 
@@ -170,7 +327,7 @@ void printlexerror(int type)
 		printf("Lexical Analyzer Error: Excessive Identifier Length\n");
 	else
 		printf("Implementation Error: Unrecognized Error Type\n");
-	
+
 	free(list);
 	return;
 }

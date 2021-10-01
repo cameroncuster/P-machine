@@ -69,7 +69,7 @@ void nullify();
 
 lexeme *lexanalyzer(char *input)
 {
-	list = malloc(1);
+	list = malloc(1000000);
 	lex_index = 0;
 	size = 1;
 
@@ -144,20 +144,25 @@ lexeme *lexanalyzer(char *input)
 			switch (input[c])
 			{
 				case ':': // ":="
-					list[lex_index].type = assignsym;
+					if (input[c + 1] != '=')
+					{
+						printlexerror(1);
+						return NULL;
+					}
+					list[lex_index++].type = assignsym;
 					c++;
 					break;
 
 				case '+':
-					list[lex_index].type = addsym;
+					list[lex_index++].type = addsym;
 					break;
 
 				case '-':
-					list[lex_index].type = subsym;
+					list[lex_index++].type = subsym;
 					break;
 
 				case '*':
-					list[lex_index].type = multsym;
+					list[lex_index++].type = multsym;
 					break;
 
 				case '/':
@@ -166,61 +171,71 @@ lexeme *lexanalyzer(char *input)
 						while (input[c] != '\n')
 							c++;
 					else
-						list[lex_index].type = divsym;
+						list[lex_index++].type = divsym;
 					break;
 
 				case '%':
-					list[lex_index].type = modsym;
+					list[lex_index++].type = modsym;
 					break;
 
 				case '=': // "=="
-					list[lex_index].type = eqlsym;
+					if (input[c + 1] != '=')
+					{
+						printlexerror(1);
+						return NULL;
+					}
+					list[lex_index++].type = eqlsym;
 					c++;
 					break;
 
 				case '!': // "!="
-					list[lex_index].type = neqsym;
+					if (input[c + 1] != '=')
+					{
+						printlexerror(1);
+						return NULL;
+					}
+					list[lex_index++].type = neqsym;
 					c++;
 					break;
 
 				case '<': // or "<="
 					if (input[c + 1] == '=')
 					{
-						list[lex_index].type = leqsym;
+						list[lex_index++].type = leqsym;
 						c++;
 					}
 					else
-						list[lex_index].type = lsssym;
+						list[lex_index++].type = lsssym;
 					break;
 
 				case '>': // or ">="
 					if (input[c + 1] == '=')
 					{
-						list[lex_index].type = geqsym;
+						list[lex_index++].type = geqsym;
 						c++;
 					}
 					else
-						list[lex_index].type = gtrsym;
+						list[lex_index++].type = gtrsym;
 					break;
 
 				case '(':
-					list[lex_index].type = lparensym;
+					list[lex_index++].type = lparensym;
 					break;
 
 				case ')':
-					list[lex_index].type = rparensym;
+					list[lex_index++].type = rparensym;
 					break;
 
 				case ',':
-					list[lex_index].type = commasym;
+					list[lex_index++].type = commasym;
 					break;
 
 				case '.':
-					list[lex_index].type = periodsym;
+					list[lex_index++].type = periodsym;
 					break;
 
 				case ';':
-					list[lex_index].type = semicolonsym;
+					list[lex_index++].type = semicolonsym;
 					break;
 
 				default:

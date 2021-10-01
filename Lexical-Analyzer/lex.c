@@ -70,10 +70,11 @@ lexeme *lexanalyzer(char *input)
 	lex_index = 0;
 	size = 1;
 
-	for (char c = input[0]; input[c] != '\0'; c++)
+	for (char c = 0; input[c] != '\0';)
 	{
 		// ignore white space
-		if (isspace(input[c]) || iscntrl(input[c])) { }
+		if (isspace(input[c]) || iscntrl(input[c]))
+			c++;
 
 		else if (isalpha(input[c]))
 		{
@@ -221,6 +222,7 @@ lexeme *lexanalyzer(char *input)
 					return NULL;
 			}
 			push(frame);
+			c++;
 		}
 	}
 

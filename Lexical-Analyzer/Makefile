@@ -9,5 +9,5 @@ SRC_CODE = driver.c lex.c
 # default rule
 
 all: $(SRC_CODE)
-	$(CC) $(SRC_CODE) -lm
-	
+	$(CC) $(SRC_CODE) -lm -g
+

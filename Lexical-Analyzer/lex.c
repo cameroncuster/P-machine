@@ -70,7 +70,7 @@ lexeme *lexanalyzer(char *input)
 	lex_index = 0;
 	size = 1;
 
-	for (char c = 0; input[c] != '\0';)
+	for (int c = 0; input[c] != '\0';)
 	{
 		// ignore white space
 		if (isspace(input[c]) || iscntrl(input[c]))
@@ -93,7 +93,7 @@ lexeme *lexanalyzer(char *input)
 			// check for reserved word and move onto the next token
 			int is_keyword = 0;
 			lexeme frame;
-			for (int i = 0; i < 31; i++)
+			for (int i = 0; i < 31 && !is_keyword; i++)
 			{
 				if (strcmp(keywords[i], buff) == 0)
 				{
@@ -378,7 +378,7 @@ void push(lexeme frame)
 {
 	if (lex_index == size - 1)
 	{
-		size = size * 2;
+		size *= 2;
 		list = realloc(list, size);
 	}
 

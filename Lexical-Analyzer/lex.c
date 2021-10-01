@@ -60,9 +60,12 @@ lexeme *list;
 int lex_index;
 int size;
 
+char buff[12];
+
 void printlexerror(int type);
 void printtokens();
-void push(lexeme frame);
+void expand();
+void nullify();
 
 lexeme *lexanalyzer(char *input)
 {
@@ -79,7 +82,6 @@ lexeme *lexanalyzer(char *input)
 		else if (isalpha(input[c]))
 		{
 			// capture the next 12 characters
-			char buff[12] = {'\0'};
 			for (int buff_ptr = 0; isalpha(input[c]); c++, buff_ptr++)
 			{
 				if (buff_ptr == 11)
@@ -92,30 +94,29 @@ lexeme *lexanalyzer(char *input)
 
 			// check for reserved word and move onto the next token
 			int is_keyword = 0;
-			lexeme frame;
 			for (int i = 0; i < 31 && !is_keyword; i++)
 			{
 				if (strcmp(keywords[i], buff) == 0)
 				{
 					is_keyword = 1;
-					strcpy(frame.name, buff);
-					frame.type = i + 1;
+					strcpy(list[lex_index].name, buff);
+					list[lex_index].type = i + 1;
+					lex_index++;
+					break;
 				}
 			}
 
 			if (!is_keyword)
 			{
-				strcpy(frame.name, buff);
-				frame.type = identsym;
+				strcpy(list[lex_index].name, buff);
+				list[lex_index].type = identsym;
+				lex_index++;
 			}
-
-			push(frame);
 		}
 
 		else if (isdigit(input[c]))
 		{
 			// capture the next numeral
-			char buff[12] = {'\0'};
 			for (int buff_ptr = 0; isdigit(input[c]); c++, buff_ptr++)
 			{
 				if (buff_ptr == 5)
@@ -132,32 +133,31 @@ lexeme *lexanalyzer(char *input)
 				return NULL;
 			}
 
-			lexeme frame;
-			frame.value = atoi(buff);
-			frame.type = numbersym;
 
-			push(frame);
+			list[lex_index].value = atoi(buff);
+			list[lex_index].type = numbersym;
+			lex_index++;
 		}
 
 		else
 		{
-			lexeme frame;
 			switch (input[c])
 			{
 				case ':': // ":="
-					frame.type = assignsym;
+					list[lex_index].type = assignsym;
+					c++;
 					break;
 
 				case '+':
-					frame.type = addsym;
+					list[lex_index].type = addsym;
 					break;
 
 				case '-':
-					frame.type = subsym;
+					list[lex_index].type = subsym;
 					break;
 
 				case '*':
-					frame.type = multsym;
+					list[lex_index].type = multsym;
 					break;
 
 				case '/':
@@ -166,70 +166,77 @@ lexeme *lexanalyzer(char *input)
 						while (input[c] != '\n')
 							c++;
 					else
-					{
-						frame.type = divsym;
-					}
+						list[lex_index].type = divsym;
 					break;
 
 				case '%':
-					frame.type = modsym;
+					list[lex_index].type = modsym;
 					break;
 
 				case '=': // "=="
-					frame.type = eqlsym;
+					list[lex_index].type = eqlsym;
+					c++;
 					break;
 
 				case '!': // "!="
-					frame.type = neqsym;
+					list[lex_index].type = neqsym;
+					c++;
 					break;
 
 				case '<': // or "<="
 					if (input[c + 1] == '=')
-						frame.type = leqsym;
+					{
+						list[lex_index].type = leqsym;
+						c++;
+					}
 					else
-						frame.type = lsssym;
+						list[lex_index].type = lsssym;
 					break;
 
 				case '>': // or ">="
 					if (input[c + 1] == '=')
-						frame.type = geqsym;
+					{
+						list[lex_index].type = geqsym;
+						c++;
+					}
 					else
-						frame.type = gtrsym;
+						list[lex_index].type = gtrsym;
 					break;
 
 				case '(':
-					frame.type = lparensym;
+					list[lex_index].type = lparensym;
 					break;
 
 				case ')':
-					frame.type = rparensym;
+					list[lex_index].type = rparensym;
 					break;
 
 				case ',':
-					frame.type = commasym;
+					list[lex_index].type = commasym;
 					break;
 
 				case '.':
-					frame.type = periodsym;
+					list[lex_index].type = periodsym;
 					break;
 
 				case ';':
-					frame.type = semicolonsym;
+					list[lex_index].type = semicolonsym;
 					break;
 
 				default:
 					printlexerror(1);
 					return NULL;
 			}
-			push(frame);
 			c++;
 		}
+
+		expand();
+		nullify();
 	}
 
 	printtokens();
 	return list;
 }
-
 
 void printtokens()
 {
@@ -374,17 +381,17 @@ void printlexerror(int type)
 	return;
 }
 
-void push(lexeme frame)
+void expand()
 {
-	if (lex_index == size - 1)
+	if (lex_index >= size - 2)
 	{
 		size *= 2;
 		list = realloc(list, size);
 	}
+}
 
-	strcpy(list[lex_index].name, frame.name);
-	list[lex_index].value = frame.value;
-	list[lex_index].type = frame.type;
-
-	lex_index++;
+void nullify()
+{
+	for (int i = 0; i < 12; i++)
+		buff[i] = '\0';
 }

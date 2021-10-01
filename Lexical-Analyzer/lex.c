@@ -82,7 +82,7 @@ lexeme *lexanalyzer(char *input)
 		else if (isalpha(input[c]))
 		{
 			// capture the next 12 characters
-			for (int buff_ptr = 0; isalpha(input[c]); c++, buff_ptr++)
+			for (int buff_ptr = 0; isalpha(input[c]) || isdigit(input[c]); c++, buff_ptr++)
 			{
 				if (buff_ptr == 11)
 				{

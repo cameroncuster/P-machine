@@ -56,23 +56,29 @@ const char *keywords[] =
 	";"
 };
 
+// dynamic list
 lexeme *list;
 int lex_index;
 int size;
 
+// buffer
 char buff[12];
 
+// prototypes
 void printlexerror(int type);
 void printtokens();
 void expand();
 void nullify();
 
+// tokenizer
 lexeme *lexanalyzer(char *input)
 {
+	// allocate single space and expand as necessary
 	list = malloc(sizeof(lexeme));
 	lex_index = 0;
 	size = 1;
 
+	// iterate the characters in the program
 	for (int c = 0; input[c] != '\0';)
 	{
 		// ignore white space
@@ -96,6 +102,7 @@ lexeme *lexanalyzer(char *input)
 			int is_keyword = 0;
 			for (int i = 0; i < 31 && !is_keyword; i++)
 			{
+				// add keyword
 				if (strcmp(keywords[i], buff) == 0)
 				{
 					is_keyword = 1;
@@ -106,6 +113,7 @@ lexeme *lexanalyzer(char *input)
 				}
 			}
 
+			// add identifier
 			if (!is_keyword)
 			{
 				strcpy(list[lex_index].name, buff);
@@ -127,13 +135,14 @@ lexeme *lexanalyzer(char *input)
 				buff[buff_ptr] = input[c];
 			}
 
+			// invalid identifier
 			if (isalpha(input[c]))
 			{
 				printlexerror(2);
 				return NULL;
 			}
 
-
+			// add literal
 			list[lex_index].value = atoi(buff);
 			list[lex_index].type = numbersym;
 			lex_index++;
@@ -141,6 +150,7 @@ lexeme *lexanalyzer(char *input)
 
 		else
 		{
+			// special characters
 			switch (input[c])
 			{
 				case ':': // ":="
@@ -245,6 +255,7 @@ lexeme *lexanalyzer(char *input)
 			c++;
 		}
 
+		// expand the list as necessary the nullify the buffer
 		expand();
 		nullify();
 	}

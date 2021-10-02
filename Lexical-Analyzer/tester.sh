@@ -2,7 +2,7 @@
 
 mv tests/*.txt .
 
-make
+make &> /dev/null
 compiled=$?
 if [[ $compiled != 0 ]]; then
 	echo "does not compile"
@@ -12,7 +12,7 @@ fi
 echo "Compiles"
 
 echo -n "Test 1 : "
-./a.out test1.txt > output.txt
+./tokenize test1.txt > output.txt
 executed=$?
 if [[ $executed !=  0 ]]; then
 	echo ":'("
@@ -31,7 +31,7 @@ fi
 
 echo -n "Test 2 : "
 
-./a.out test2.txt > output.txt
+./tokenize test2.txt > output.txt
 executed=$?
 if [[ $executed !=  0 ]]; then
 	echo ":'("
@@ -47,7 +47,7 @@ fi
 
 echo -n "Test 3 : "
 
-./a.out test3.txt > output.txt
+./tokenize test3.txt > output.txt
 executed=$?
 if [[ $executed !=  0 ]]; then
 	echo ":'("
@@ -63,7 +63,7 @@ fi
 
 echo -n "Test 4 : "
 
-./a.out test4.txt > output.txt
+./tokenize test4.txt > output.txt
 executed=$?
 if [[ $executed !=  0 ]]; then
 	echo ":'("
@@ -80,7 +80,7 @@ fi
 
 echo -n "Test 5 : "
 
-./a.out test5.txt > output.txt
+./tokenize test5.txt > output.txt
 executed=$?
 if [[ $executed !=  0 ]]; then
 	echo ":'("
@@ -96,7 +96,7 @@ fi
 
 echo -n "Test 6 : "
 
-./a.out test6.txt > output.txt
+./tokenize test6.txt > output.txt
 executed=$?
 if [[ $executed !=  0 ]]; then
 	echo ":'("
@@ -111,4 +111,5 @@ else
 fi
 
 mv *.txt tests
-rm a.out
+
+make clean &> /dev/null

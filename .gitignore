@@ -1,5 +1,3 @@
 *.o
 *.d
 *.out
-main
-output.txt

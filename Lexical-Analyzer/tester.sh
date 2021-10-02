@@ -1,5 +1,7 @@
 #!/bin/bash
 
+mv tests/*.txt .
+
 make
 compiled=$?
 if [[ $compiled != 0 ]]; then
@@ -107,3 +109,6 @@ else
 		echo "───==≡≡ΣΣ((( つºل͜º)つ"
 	fi
 fi
+
+mv *.txt tests
+rm a.out

@@ -22,7 +22,7 @@ clean:
 	rm -rf *.out *.o *.d tokenize
 
 tar: clean
-	tar zcvf Lexical-Analyzer.tgz *.h *.c Makefile README.md
+	tar zcvf Lexical-Analyzer.tgz *.h *.c Makefile README.md tester.sh tests
 
 help:
 	@echo "	make tokenize	- same as make all"

@@ -49,6 +49,7 @@ const char *keywords[] =
 	"<=",
 	">",
 	">=",
+	"odd",
 	"(",
 	")",
 	",",
@@ -100,7 +101,7 @@ lexeme *lexanalyzer(char *input)
 
 			// check for reserved word and move onto the next token
 			int is_keyword = 0;
-			for (int i = 0; i < 31 && !is_keyword; i++)
+			for (int i = 0; i < 32 && !is_keyword; i++)
 			{
 				// add keyword
 				if (strcmp(keywords[i], buff) == 0)

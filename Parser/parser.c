@@ -81,8 +81,7 @@ void program()
 	block();
 
 	// assert period ending (poor syntactic structure)
-	lexeme token = getnexttoken();
-	if (token.type != periodsym)
+	if (getcurrtoken().type != periodsym)
 	{
 		printparseerror(1);
 		exit(0);
@@ -262,7 +261,7 @@ lexeme getcurrtoken()
 
 lexeme getnexttoken()
 {
-	return tokens[tokenIndex++];
+	return tokens[++tokenIndex];
 }
 
 int multipledeclarationcheck(lexeme token)

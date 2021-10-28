@@ -1,16 +1,31 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
 #include "compiler.h"
 
+// preprocessed constants
 #define MAX_CODE_LENGTH 1000
 #define MAX_SYMBOL_COUNT 100
 
+// class (global) data
 instruction *code;
 int cIndex;
 symbol *table;
 int tIndex;
+int Level;
+int token_idx;
 
+// parser members
+void program(lexeme *list);
+void block(lexeme *list);
+void const_declaration(lexeme *list);
+int var_declaration(lexeme *list);
+void procedure_declaration(lexeme *list);
+void statement(lexeme *list);
+
+// helpers
+void mark();
 void emit(int opname, int level, int mvalue);
 void addToSymbolTable(int k, char n[], int v, int l, int a, int m);
 void printparseerror(int err_code);
@@ -19,16 +34,143 @@ void printassemblycode();
 
 instruction *parse(lexeme *list, int printTable, int printCode)
 {
-	code = NULL;
+	// allocate the space for the parsed program
+	code = malloc(MAX_CODE_LENGTH * sizeof(instruction));
+	cIndex = 0;
+	table = malloc(MAX_SYMBOL_COUNT * sizeof(symbol));
+	tIndex = 0;
+
+	// parse the program
+	program(list);
+
 	/* this line is EXTREMELY IMPORTANT, you MUST uncomment it
-		when you test your code otherwise IT WILL SEGFAULT in 
+		when you test your code otherwise IT WILL SEGFAULT in
 		vm.o THIS LINE IS HOW THE VM KNOWS WHERE THE CODE ENDS
 		WHEN COPYING IT TO THE PAS
-	code[cIndex].opcode = -1;
 	*/
+	code[cIndex].opcode = -1;
+
+	// print table if specified
+	if (printTable)
+		printsymboltable();
+
+	// print code if specified
+	if (printCode)
+		printassemblycode();
+
 	return code;
 }
 
+void program(lexeme *list)
+{
+	// start at the beginning
+	token_idx = 0;
+
+	// JMP
+	emit(7, 0, 0);
+
+	// main function
+	addToSymbolTable(3, "main", 0, -1, 0, 0);
+	Level = -1;
+
+	// build out the block
+	block(list);
+
+	// assert period ending (poor syntactic structure)
+	if (list[token_idx].type != periodsym)
+	{
+		printparseerror(1);
+		exit(0);
+	}
+
+	// HALT (SYS CALL)
+	emit(9, 0, 3);
+
+	// restore CALL destination address
+	for (int line = 0; line < cIndex; line++)
+		if (code[line].opcode == 5)
+			code[line].m = table[code[line].m].addr;
+
+	// program start (initial JMP added above)
+	code[0].m = table[0].addr;
+}
+
+void block(lexeme *list)
+{
+	Level++;
+
+	int procedure_idx = tIndex - 1;
+
+	// declarations
+	const_declaration(list);
+	int numVars = var_declaration(list);
+	procedure_declaration(list);
+
+	// addressing
+	table[procedure_idx].addr = cIndex * 3;
+
+	if (Level == 0)
+		// INC to main
+		emit(6, Level, numVars);
+	else
+		// INC -> alloc space for the activation record
+		// (AR: static link (SL) dynamic link (DL) return address (RA))
+		emit(6, Level, numVars + 3);
+
+	// statements (non-declarative)
+	statement(list);
+
+	mark();
+
+	Level--;
+}
+
+void const_declaration(lexeme *list) {
+	if (list[token_idx].type == constsym) {
+	}
+}
+
+int var_declaration(lexeme *list) {
+	int numVars = 0;
+	if (list[token_idx].type == varsym) {
+	}
+	return numVars;
+}
+
+void procedure_declaration(lexeme *list) {
+	while (list[token_idx].type == procsym) {
+	}
+}
+
+void statement(lexeme *list) {
+	if (list[token_idx].type == identsym) {
+	}
+	else if (list[token_idx].type == beginsym) {
+	}
+	else if (list[token_idx].type == ifsym) {
+	}
+	else if (list[token_idx].type == whilesym) {
+	}
+	else if (list[token_idx].type == readsym) {
+	}
+	else if (list[token_idx].type == writesym) {
+	}
+	else if (list[token_idx].type == callsym) {
+	}
+	else if (list[token_idx].type == callsym) {
+	}
+}
+
+void mark() {
+	for (int i = tIndex - 1; i >= 0; i--) {
+		if (!table[i].mark) {
+			if (table[i].level == Level)
+				table[i].mark = 1;
+			else if (table[i].level < Level)
+				break;
+		}
+	}
+}
 
 void emit(int opname, int level, int mvalue)
 {
@@ -115,7 +257,7 @@ void printparseerror(int err_code)
 			printf("Implementation Error: unrecognized error code\n");
 			break;
 	}
-	
+
 	free(code);
 	free(table);
 }
@@ -127,8 +269,8 @@ void printsymboltable()
 	printf("Kind | Name        | Value | Level | Address | Mark\n");
 	printf("---------------------------------------------------\n");
 	for (i = 0; i < tIndex; i++)
-		printf("%4d | %11s | %5d | %5d | %5d | %5d\n", table[i].kind, table[i].name, table[i].val, table[i].level, table[i].addr, table[i].mark); 
-	
+		printf("%4d | %11s | %5d | %5d | %5d | %5d\n", table[i].kind, table[i].name, table[i].val, table[i].level, table[i].addr, table[i].mark);
+
 	free(table);
 	table = NULL;
 }

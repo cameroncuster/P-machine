@@ -13,20 +13,24 @@ instruction *code;
 int cIndex;
 symbol *table;
 int tIndex;
-int Level;
-int token_idx;
+lexeme *tokens;
+int tokenIndex;
+int level;
 
 // parser members
-void program(lexeme *list);
-void block(lexeme *list);
-void const_declaration(lexeme *list);
-int var_declaration(lexeme *list);
-void procedure_declaration(lexeme *list);
-void statement(lexeme *list);
+void program();
+void block();
+void const_declaration();
+int var_declaration();
+void procedure_declaration();
+void statement();
 
 // helpers
 void mark();
-void emit(int opname, int level, int mvalue);
+lexeme getcurrtoken();
+lexeme getnexttoken();
+int multipledeclarationcheck(lexeme token);
+void emit(int opcode, int l, int m);
 void addToSymbolTable(int k, char n[], int v, int l, int a, int m);
 void printparseerror(int err_code);
 void printsymboltable();
@@ -40,14 +44,17 @@ instruction *parse(lexeme *list, int printTable, int printCode)
 	table = malloc(MAX_SYMBOL_COUNT * sizeof(symbol));
 	tIndex = 0;
 
+	tokens = list;
+	tokenIndex = 0;
+
 	// parse the program
-	program(list);
+	program();
 
 	/* this line is EXTREMELY IMPORTANT, you MUST uncomment it
-		when you test your code otherwise IT WILL SEGFAULT in
-		vm.o THIS LINE IS HOW THE VM KNOWS WHERE THE CODE ENDS
-		WHEN COPYING IT TO THE PAS
-	*/
+	   when you test your code otherwise IT WILL SEGFAULT in
+	   vm.o THIS LINE IS HOW THE VM KNOWS WHERE THE CODE ENDS
+	   WHEN COPYING IT TO THE PAS
+	 */
 	code[cIndex].opcode = -1;
 
 	// print table if specified
@@ -61,23 +68,21 @@ instruction *parse(lexeme *list, int printTable, int printCode)
 	return code;
 }
 
-void program(lexeme *list)
+void program()
 {
-	// start at the beginning
-	token_idx = 0;
-
 	// JMP
 	emit(7, 0, 0);
 
 	// main function
 	addToSymbolTable(3, "main", 0, -1, 0, 0);
-	Level = -1;
+	level = -1;
 
 	// build out the block
-	block(list);
+	block();
 
 	// assert period ending (poor syntactic structure)
-	if (list[token_idx].type != periodsym)
+	lexeme token = getnexttoken();
+	if (token.type != periodsym)
 	{
 		printparseerror(1);
 		exit(0);
@@ -95,88 +100,188 @@ void program(lexeme *list)
 	code[0].m = table[0].addr;
 }
 
-void block(lexeme *list)
+void block()
 {
-	Level++;
+	level++;
 
 	int procedure_idx = tIndex - 1;
 
 	// declarations
-	const_declaration(list);
-	int numVars = var_declaration(list);
-	procedure_declaration(list);
+	const_declaration();
+	int numVars = var_declaration();
+	procedure_declaration();
 
 	// addressing
 	table[procedure_idx].addr = cIndex * 3;
 
-	if (Level == 0)
+	if (level == 0)
 		// INC to main
-		emit(6, Level, numVars);
+		emit(6, level, numVars);
 	else
 		// INC -> alloc space for the activation record
 		// (AR: static link (SL) dynamic link (DL) return address (RA))
-		emit(6, Level, numVars + 3);
+		emit(6, level, numVars + 3);
 
 	// statements (non-declarative)
-	statement(list);
+	statement();
 
 	mark();
 
-	Level--;
+	level--;
 }
 
-void const_declaration(lexeme *list) {
-	if (list[token_idx].type == constsym) {
+void const_declaration()
+{
+	lexeme token;
+	if (getcurrtoken().type == constsym)
+	{
+		do {
+			token = getnexttoken();
+
+			if (token.type != identsym)
+			{
+				printparseerror(2);
+				exit(0);
+			}
+
+			int symidx = multipledeclarationcheck(getnexttoken());
+
+			if (symidx != -1)
+			{
+				printparseerror(18);
+				exit(0);
+			}
+
+			char *name = getcurrtoken().name;
+
+			token = getnexttoken();
+
+			if (token.type != assignsym)
+			{
+				printparseerror(2);
+				exit(0);
+			}
+
+			token = getnexttoken();
+
+			if (token.type != numbersym)
+			{
+				printparseerror(2);
+				exit(0);
+			}
+
+			token = getnexttoken();
+
+			addToSymbolTable(1, name, token.value, level, 0, 0);
+
+			token = getnexttoken();
+
+		} while (getcurrtoken().type == commasym);
+
+		if (getcurrtoken().type != semicolonsym)
+		{
+			if (getcurrtoken().type == identsym)
+			{
+				printparseerror(13);
+				exit(0);
+			}
+			else
+			{
+				printparseerror(14);
+				exit(0);
+			}
+		}
+
+		getnexttoken();
 	}
 }
 
-int var_declaration(lexeme *list) {
+int var_declaration()
+{
 	int numVars = 0;
-	if (list[token_idx].type == varsym) {
+	if (getcurrtoken().type == varsym)
+	{
 	}
 	return numVars;
 }
 
-void procedure_declaration(lexeme *list) {
-	while (list[token_idx].type == procsym) {
+void procedure_declaration()
+{
+	while (getcurrtoken().type == procsym)
+	{
 	}
 }
 
-void statement(lexeme *list) {
-	if (list[token_idx].type == identsym) {
+void statement()
+{
+	lexeme token = getcurrtoken();
+	if (token.type == identsym)
+	{
 	}
-	else if (list[token_idx].type == beginsym) {
+	else if (token.type == beginsym)
+	{
 	}
-	else if (list[token_idx].type == ifsym) {
+	else if (token.type == ifsym)
+	{
 	}
-	else if (list[token_idx].type == whilesym) {
+	else if (token.type == whilesym)
+	{
 	}
-	else if (list[token_idx].type == readsym) {
+	else if (token.type == readsym)
+	{
 	}
-	else if (list[token_idx].type == writesym) {
+	else if (token.type == writesym)
+	{
 	}
-	else if (list[token_idx].type == callsym) {
+	else if (token.type == callsym)
+	{
 	}
-	else if (list[token_idx].type == callsym) {
+	else if (token.type == callsym)
+	{
 	}
 }
 
-void mark() {
-	for (int i = tIndex - 1; i >= 0; i--) {
-		if (!table[i].mark) {
-			if (table[i].level == Level)
+void mark()
+{
+	for (int i = tIndex - 1; i >= 0; i--)
+	{
+		if (!table[i].mark)
+		{
+			if (table[i].level == level)
 				table[i].mark = 1;
-			else if (table[i].level < Level)
+			else if (table[i].level < level)
 				break;
 		}
 	}
 }
 
-void emit(int opname, int level, int mvalue)
+lexeme getcurrtoken()
 {
-	code[cIndex].opcode = opname;
-	code[cIndex].l = level;
-	code[cIndex].m = mvalue;
+	return tokens[tokenIndex];
+}
+
+lexeme getnexttoken()
+{
+	return tokens[tokenIndex++];
+}
+
+int multipledeclarationcheck(lexeme token)
+{
+	for (int i = tIndex - 1; i >= 0; i--)
+	{
+		if (table[i].mark == 0 &&
+				table[i].level == level &&
+				strcmp(token.name, table[i].name) == 0)
+			return i;
+		return -1;
+	}
+}
+
+void emit(int opcode, int l, int m)
+{
+	code[cIndex].opcode = opcode;
+	code[cIndex].l = l;
+	code[cIndex].m = m;
 	cIndex++;
 }
 

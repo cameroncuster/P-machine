@@ -79,7 +79,7 @@ void program()
 	emit(7, 0, 0);
 
 	// main function
-	addToSymbolTable(3, "main", 0, -1, 0, 0);
+	addToSymbolTable(3, "main", 0, 0, 0, 0);
 	level = -1;
 
 	// build out the block
@@ -121,11 +121,11 @@ void block()
 
 	if (level == 0)
 		// INC to main
-		emit(6, level, numVars);
+		emit(6, 0, numVars);
 	else
 		// INC -> alloc space for the activation record
 		// (AR: static link (SL) dynamic link (DL) return address (RA))
-		emit(6, level, numVars + 3);
+		emit(6, 0, numVars + 3);
 
 	// statements (non-declarative)
 	statement();
@@ -430,12 +430,12 @@ void statement()
 		int jpcIdx = cIndex;
 
 		// emit JPC
-		emit(8, level, 0);
+		emit(8, 0, 0);
 
 		statement();
 
 		// emit JMP
-		emit(7, level, loopIdx * 3);
+		emit(7, 0, loopIdx * 3);
 
 		code[jpcIdx].m = cIndex * 3;
 	}
@@ -684,7 +684,7 @@ void factor()
 		// const case
 		if (symIdx_var == -1)
 			// emit LIT
-			emit(1, level, table[symIdx_const].val);
+			emit(1, 0, table[symIdx_const].val);
 		// var case
 		else if (symIdx_const == -1 ||
 				table[symIdx_var].level > table[symIdx_const].level)
@@ -693,13 +693,13 @@ void factor()
 		// const case
 		else
 			// emit LIT
-			emit(1, level, table[symIdx_const].val);
+			emit(1, 0, table[symIdx_const].val);
 
 		getnexttoken();
 	}
 	else if (getcurrtoken().type == numbersym)
-		// emit literal
-		emit(1, level, getcurrtoken().value);
+		// emit LIT
+		emit(1, 0, getcurrtoken().value);
 	else if (getcurrtoken().type == lparensym)
 	{
 		getnexttoken();
@@ -774,8 +774,8 @@ int multipledeclarationcheck(lexeme token)
 				table[i].level == level &&
 				strcmp(token.name, table[i].name) == 0)
 			return i;
-		return -1;
 	}
+	return -1;
 }
 
 void emit(int opcode, int l, int m)

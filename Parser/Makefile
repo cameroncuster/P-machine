@@ -9,4 +9,4 @@ SRC_CODE = driver.c lex.o parser.c vm.o
 # default rule
 
 all: $(SRC_CODE)
-	$(CC) $(SRC_CODE) -lm -g
+	$(CC) $(SRC_CODE) -lm -Wall -g

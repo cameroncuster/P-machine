@@ -26,6 +26,8 @@ void procedure_declaration();
 void statement();
 void condition();
 void expression();
+void term();
+void factor();
 
 // helpers
 lexeme getcurrtoken();
@@ -244,10 +246,12 @@ int var_declaration()
 			// add to symbol table
 			// if outside main (no control information)
 			if (level == 0)
-				addToSymbolTable(2, getcurrtoken().name, 0, level, numVars - 1, 0);
+				addToSymbolTable(2, getcurrtoken().name, 0, level, numVars - 1,
+						0);
 			else
 				// buffer for control information
-				addToSymbolTable(2, getcurrtoken().name, 0, level, numVars + 2, 0);
+				addToSymbolTable(2, getcurrtoken().name, 0, level, numVars + 2,
+						0);
 
 			getnexttoken();
 
@@ -573,7 +577,71 @@ void expression()
 	if (getcurrtoken().type == subsym)
 	{
 		getnexttoken();
+		term();
+
+		// emit NEG
+		emit(2, 0, 1);
+
+		while (getcurrtoken().type == addsym || getcurrtoken().type == subsym)
+		{
+			if (getcurrtoken().type == addsym)
+			{
+				getnexttoken();
+				term();
+				// emit ADD
+				emit(2, 0, 2);
+			}
+			else
+			{
+				getnexttoken();
+				term();
+				// emit SUB
+				emit(2, 0, 3);
+			}
+		}
 	}
+	else
+	{
+		if (getcurrtoken().type == addsym)
+			getnexttoken();
+
+		term();
+		while (getcurrtoken().type == addsym || getcurrtoken().type == subsym)
+		{
+			if (getcurrtoken().type == addsym)
+			{
+				getnexttoken();
+				term();
+				// emit ADD
+				emit(2, 0, 2);
+			}
+			else
+			{
+				getnexttoken();
+				term();
+				// emit SUB
+				emit(2, 0, 3);
+			}
+		}
+	}
+
+	// expression should not be followed by ), identifer, number, or odd - bad
+	if (getcurrtoken().type == rparensym ||
+			getcurrtoken().type == identsym ||
+			getcurrtoken().type == numbersym ||
+			getcurrtoken().type == oddsym)
+	{
+		printparseerror(17);
+		exit(0);
+	}
+}
+
+void term()
+{
+}
+
+void factor()
+{
 }
 
 lexeme getcurrtoken()

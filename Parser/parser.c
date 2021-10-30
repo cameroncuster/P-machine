@@ -25,6 +25,7 @@ int var_declaration();
 void procedure_declaration();
 void statement();
 void expression();
+void condition();
 
 // helpers
 lexeme getcurrtoken();
@@ -343,9 +344,71 @@ void statement()
 	}
 	else if (getcurrtoken().type == beginsym)
 	{
+		// parse statements
+		do {
+			getnexttoken();
+
+			statement();
+		} while (getcurrtoken().type == semicolonsym);
+
+		// begin must be closed with end symbol
+		if (getcurrtoken().type != endsym)
+		{
+			switch (getcurrtoken().type)
+			{
+				case identsym:
+				case beginsym:
+				case ifsym:
+				case whilesym:
+				case readsym:
+				case writesym:
+				case callsym:
+					printparseerror(100); // TODO: FIND ERROR CODE
+					exit(0);
+				default:
+					printparseerror(16);
+					exit(0);
+			}
+		}
+
+		getnexttoken();
 	}
 	else if (getcurrtoken().type == ifsym)
 	{
+		getnexttoken();
+
+		condition();
+
+		int jpcIdx = cIndex;
+
+		// EMIT JPC
+		emit(8, level, 0);
+
+		if (getcurrtoken().type != thensym)
+		{
+			printparseerror(8);
+			exit(0);
+		}
+
+		getnexttoken();
+
+		statement();
+
+		// handle the else statement
+		if (getcurrtoken().type == elsesym)
+		{
+			int jmpIdx = cIndex;
+			// EMIT JMP
+			emit(7, level, 0);
+
+			// JPC/JMP to the end
+			code[jpcIdx].m = cIndex * 3;
+			statement();
+			code[jmpIdx].m = cIndex * 3;
+		}
+		else
+			// JPC to the end
+			code[jpcIdx].m = cIndex * 3;
 	}
 	else if (getcurrtoken().type == whilesym)
 	{
@@ -366,6 +429,19 @@ void expression()
 	if (getcurrtoken().type == subsym)
 	{
 		getnexttoken();
+	}
+}
+
+void condition()
+{
+	if (getcurrtoken().type == oddsym)
+	{
+		getnexttoken();
+		expression();
+	}
+	else
+	{
+		expression();
 	}
 }
 

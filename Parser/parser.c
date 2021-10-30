@@ -475,6 +475,10 @@ void statement()
 	}
 	else if (getcurrtoken().type == writesym)
 	{
+		getnexttoken();
+		expression();
+		// emit WRITE
+		emit(9, 0, 1);
 	}
 	else if (getcurrtoken().type == callsym)
 	{

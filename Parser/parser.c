@@ -152,7 +152,6 @@ void const_declaration()
 				exit(0);
 			}
 
-			// check actual identifier
 			int symidx = multipledeclarationcheck(getcurrtoken());
 
 			// check for multiple declarations
@@ -183,7 +182,6 @@ void const_declaration()
 				exit(0);
 			}
 
-			// use actual integer value
 			addToSymbolTable(1, name, getcurrtoken().value, level, 0, 0);
 
 			getnexttoken();
@@ -232,7 +230,6 @@ int var_declaration()
 				exit(0);
 			}
 
-			// check actual identifier
 			int symidx = multipledeclarationcheck(getcurrtoken());
 
 			// check for multiple declarations
@@ -272,7 +269,6 @@ void procedure_declaration()
 			exit(0);
 		}
 
-		// check actual identifier
 		int symidx = multipledeclarationcheck(getcurrtoken());
 
 		// check for multiple declarations

@@ -442,6 +442,36 @@ void statement()
 	}
 	else if (getcurrtoken().type == readsym)
 	{
+		getnexttoken();
+
+		// read symbol must be followed by indentifier symbol
+		if (getcurrtoken().type != identsym)
+		{
+			printparseerror(6);
+			exit(0);
+		}
+
+		int symIdx = findsymbol(getcurrtoken(), 2);
+
+		// identifier not found in symbol table
+		if (symIdx == -1)
+		{
+			// identifier is not a variable
+			if (findsymbol(getcurrtoken(), 1) != findsymbol(getcurrtoken(), 3))
+				printparseerror(6);
+			// identifier is undeclared
+			else
+				printparseerror(19);
+			exit(0);
+		}
+
+		getnexttoken();
+
+		// emit READ
+		emit(9, 0, 2);
+
+		// emit STO
+		emit(4, level - table[symIdx].level, table[symIdx].addr);
 	}
 	else if (getcurrtoken().type == writesym)
 	{

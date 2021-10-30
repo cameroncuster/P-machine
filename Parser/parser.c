@@ -638,10 +638,94 @@ void expression()
 
 void term()
 {
+	factor();
+	while (getcurrtoken().type == multsym ||
+			getcurrtoken().type == divsym ||
+			getcurrtoken().type == modsym)
+	{
+		if (getcurrtoken().type == multsym)
+		{
+			getnexttoken();
+			factor();
+			// emit MUL
+			emit(2, 0, 4);
+		}
+		else if (getcurrtoken().type == divsym)
+		{
+			getnexttoken();
+			factor();
+			// emit DIV
+			emit(2, 0, 5);
+		}
+		else
+		{
+			getnexttoken();
+			factor();
+			// emit MOD
+			emit(2, 0, 7);
+		}
+	}
 }
 
 void factor()
 {
+	if (getcurrtoken().type == identsym)
+	{
+		int symIdx_var = findsymbol(getcurrtoken(), 2);
+		int symIdx_const = findsymbol(getcurrtoken(), 1);
+
+		// identifier is neither a declared variable or a declared constant
+		if (symIdx_var == -1 && symIdx_const == -1)
+		{
+			// identifier is a procedure in an arithmetic expression (incorrect)
+			if (findsymbol(getcurrtoken(), 3) != -1)
+				printparseerror(11);
+			// not declared
+			else
+				printparseerror(19);
+			exit(0);
+		}
+
+		// const case
+		if (symIdx_var == -1)
+			// emit LIT
+			emit(1, level, table[symIdx_const].val);
+		// var case
+		else if (symIdx_const == -1 ||
+				table[symIdx_var].level > table[symIdx_const].level)
+			// emit LOD
+			emit(3, level - table[symIdx_var].level, table[symIdx_var].addr);
+		// const case
+		else
+			// emit LIT
+			emit(1, level, table[symIdx_const].val);
+
+		getnexttoken();
+	}
+	else if (getcurrtoken().type == numbersym)
+		// emit literal
+		emit(1, level, getnexttoken().value);
+	else if (getcurrtoken().type == lparensym)
+	{
+		getnexttoken();
+
+		// parse expression
+		expression();
+
+		// expression must be closed with )
+		if (getcurrtoken().type != rparensym)
+		{
+			printparseerror(12);
+			exit(0);
+		}
+
+		getnexttoken();
+	}
+	else
+	{
+		printparseerror(11);
+		exit(0);
+	}
 }
 
 lexeme getcurrtoken()

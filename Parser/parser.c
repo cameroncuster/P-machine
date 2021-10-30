@@ -453,7 +453,7 @@ void statement()
 
 		int symIdx = findsymbol(getcurrtoken(), 2);
 
-		// identifier not found in symbol table
+		// variable identifier not found in symbol table
 		if (symIdx == -1)
 		{
 			// identifier is not a variable
@@ -482,6 +482,26 @@ void statement()
 	}
 	else if (getcurrtoken().type == callsym)
 	{
+		getnexttoken();
+
+		int symIdx = findsymbol(getcurrtoken(), 3);
+
+		// procedure identifier not found in symbol table
+		if (symIdx == -1)
+		{
+			// identifier is not a procedure
+			if (findsymbol(getcurrtoken(), 1) != findsymbol(getcurrtoken(), 2))
+				printparseerror(7);
+			// identifier is undeclared
+			else
+				printparseerror(19);
+			exit(0);
+		}
+
+		getnexttoken();
+
+		// emit CAL
+		emit(5, level - table[symIdx].level, symIdx);
 	}
 }
 

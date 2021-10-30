@@ -640,7 +640,7 @@ void expression()
 	}
 
 	// expression should not be followed by ), identifer, number, or odd - bad
-	if (getcurrtoken().type == rparensym ||
+	if (getcurrtoken().type == lparensym ||
 			getcurrtoken().type == identsym ||
 			getcurrtoken().type == numbersym ||
 			getcurrtoken().type == oddsym)
@@ -717,8 +717,11 @@ void factor()
 		getnexttoken();
 	}
 	else if (getcurrtoken().type == numbersym)
+	{
 		// emit LIT
 		emit(1, 0, getcurrtoken().value);
+		getnexttoken();
+	}
 	else if (getcurrtoken().type == lparensym)
 	{
 		getnexttoken();

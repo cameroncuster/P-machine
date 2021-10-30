@@ -153,7 +153,7 @@ void const_declaration()
 			}
 
 			// check actual identifier
-			int symidx = multipledeclarationcheck(getnexttoken());
+			int symidx = multipledeclarationcheck(getcurrtoken());
 
 			// check for multiple declarations
 			if (symidx != -1)
@@ -184,7 +184,6 @@ void const_declaration()
 			}
 
 			// use actual integer value
-			getnexttoken();
 			addToSymbolTable(1, name, getcurrtoken().value, level, 0, 0);
 
 			getnexttoken();
@@ -234,7 +233,7 @@ int var_declaration()
 			}
 
 			// check actual identifier
-			int symidx = multipledeclarationcheck(getnexttoken());
+			int symidx = multipledeclarationcheck(getcurrtoken());
 
 			// check for multiple declarations
 			if (symidx != -1)
@@ -274,7 +273,7 @@ void procedure_declaration()
 		}
 
 		// check actual identifier
-		int symidx = multipledeclarationcheck(getnexttoken());
+		int symidx = multipledeclarationcheck(getcurrtoken());
 
 		// check for multiple declarations
 		if (symidx != -1)
@@ -704,7 +703,7 @@ void factor()
 	}
 	else if (getcurrtoken().type == numbersym)
 		// emit literal
-		emit(1, level, getnexttoken().value);
+		emit(1, level, getcurrtoken().value);
 	else if (getcurrtoken().type == lparensym)
 	{
 		getnexttoken();

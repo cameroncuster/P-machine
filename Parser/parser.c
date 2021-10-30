@@ -29,7 +29,7 @@ void statement();
 lexeme getcurrtoken();
 lexeme getnexttoken();
 void mark();
-int findsymbol(lexeme token);
+int findsymbol(lexeme token, int kind);
 int multipledeclarationcheck(lexeme token);
 void emit(int opcode, int l, int m);
 void addToSymbolTable(int k, char n[], int v, int l, int a, int m);
@@ -309,6 +309,7 @@ void statement()
 {
 	if (getcurrtoken().type == identsym)
 	{
+		int symIdx = findsymbol(getcurrtoken(), 2);
 	}
 	else if (getcurrtoken().type == beginsym)
 	{
@@ -354,14 +355,14 @@ void mark()
 	}
 }
 
-int findsymbol(lexeme token)
+int findsymbol(lexeme token, int kind)
 {
 	int symIdx = -1, mxLevel = -1;
 
 	for (int i = tIndex - 1; i >= 0; i--)
 	{
 		if (table[i].mark == 0 &&
-				table[i].kind == token.type &&
+				table[i].kind == kind &&
 				strcmp(token.name, table[i].name) == 0 &&
 				table[i].level > mxLevel)
 		{

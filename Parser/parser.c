@@ -80,7 +80,7 @@ void program()
 	// build out the block
 	block();
 
-	// assert period ending (poor syntactic structure)
+	// assert period ending
 	if (getcurrtoken().type != periodsym)
 	{
 		printparseerror(1);
@@ -101,6 +101,7 @@ void program()
 
 void block()
 {
+	// next level (new block)
 	level++;
 
 	int procedure_idx = tIndex - 1;
@@ -124,66 +125,78 @@ void block()
 	// statements (non-declarative)
 	statement();
 
+	// variables in block will be out of scope on return
 	mark();
 
+	// restore level (return to parent)
 	level--;
 }
 
 void const_declaration()
 {
-	lexeme token;
+	// declaring constants
 	if (getcurrtoken().type == constsym)
 	{
 		do {
-			token = getnexttoken();
+			getnexttoken();
 
-			if (token.type != identsym)
+			// identifier?
+			if (getcurrtoken().type != identsym)
 			{
 				printparseerror(2);
 				exit(0);
 			}
 
+			// check actual identifier
 			int symidx = multipledeclarationcheck(getnexttoken());
 
+			// check for multiple declarations
 			if (symidx != -1)
 			{
 				printparseerror(18);
 				exit(0);
 			}
 
+			// save ident name
 			char *name = getcurrtoken().name;
 
-			token = getnexttoken();
+			getnexttoken();
 
-			if (token.type != assignsym)
+			// must be assigned (const)
+			if (getcurrtoken().type != assignsym)
 			{
 				printparseerror(2);
 				exit(0);
 			}
 
-			token = getnexttoken();
+			getnexttoken();
 
-			if (token.type != numbersym)
+			// must be an integer
+			if (getcurrtoken().type != numbersym)
 			{
 				printparseerror(2);
 				exit(0);
 			}
 
-			token = getnexttoken();
+			// use actual integer value
+			getnexttoken();
+			addToSymbolTable(1, name, getcurrtoken().value, level, 0, 0);
 
-			addToSymbolTable(1, name, token.value, level, 0, 0);
+			getnexttoken();
 
-			token = getnexttoken();
-
+			// do more declarations
 		} while (getcurrtoken().type == commasym);
 
+		// declarations must end with semicolon
 		if (getcurrtoken().type != semicolonsym)
 		{
+			// if identifier symbol error
 			if (getcurrtoken().type == identsym)
 			{
 				printparseerror(13);
 				exit(0);
 			}
+			// other error
 			else
 			{
 				printparseerror(14);
@@ -191,6 +204,7 @@ void const_declaration()
 			}
 		}
 
+		// move past the semicolon
 		getnexttoken();
 	}
 }
@@ -213,29 +227,25 @@ void procedure_declaration()
 
 void statement()
 {
-	lexeme token = getcurrtoken();
-	if (token.type == identsym)
+	if (getcurrtoken().type == identsym)
 	{
 	}
-	else if (token.type == beginsym)
+	else if (getcurrtoken().type == beginsym)
 	{
 	}
-	else if (token.type == ifsym)
+	else if (getcurrtoken().type == ifsym)
 	{
 	}
-	else if (token.type == whilesym)
+	else if (getcurrtoken().type == whilesym)
 	{
 	}
-	else if (token.type == readsym)
+	else if (getcurrtoken().type == readsym)
 	{
 	}
-	else if (token.type == writesym)
+	else if (getcurrtoken().type == writesym)
 	{
 	}
-	else if (token.type == callsym)
-	{
-	}
-	else if (token.type == callsym)
+	else if (getcurrtoken().type == callsym)
 	{
 	}
 }

@@ -384,6 +384,7 @@ void statement()
 		// EMIT JPC
 		emit(8, level, 0);
 
+		// if symbol must be followed by then symbol
 		if (getcurrtoken().type != thensym)
 		{
 			printparseerror(8);
@@ -412,6 +413,32 @@ void statement()
 	}
 	else if (getcurrtoken().type == whilesym)
 	{
+		getnexttoken();
+
+		int loopIdx = cIndex;
+
+		condition();
+
+		// while symbol must be followed by do symbol
+		if (getcurrtoken().type != dosym)
+		{
+			printparseerror(9);
+			exit(0);
+		}
+
+		getnexttoken();
+
+		int jpcIdx = cIndex;
+
+		// emit JPC
+		emit(8, level, 0);
+
+		statement();
+
+		// emit JMP
+		emit(7, level, loopIdx * 3);
+
+		code[jpcIdx].m = cIndex * 3;
 	}
 	else if (getcurrtoken().type == readsym)
 	{

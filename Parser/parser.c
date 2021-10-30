@@ -24,6 +24,7 @@ void const_declaration();
 int var_declaration();
 void procedure_declaration();
 void statement();
+void expression();
 
 // helpers
 lexeme getcurrtoken();
@@ -223,7 +224,8 @@ int var_declaration()
 			getnexttoken();
 
 			// variable declaration must lead with identifier
-			if (getcurrtoken().type != identsym) {
+			if (getcurrtoken().type != identsym)
+			{
 				printparseerror(3);
 				exit(0);
 			}
@@ -282,7 +284,8 @@ void procedure_declaration()
 		getnexttoken();
 
 		// procedure declarations must be followed by a semicolon symbol
-		if (getcurrtoken().type != semicolonsym) {
+		if (getcurrtoken().type != semicolonsym)
+		{
 			printparseerror(14);
 			exit(0);
 		}
@@ -293,7 +296,8 @@ void procedure_declaration()
 		block();
 
 		// symbol declarations should close with a semicolon symbol
-		if (getcurrtoken().type != semicolonsym) {
+		if (getcurrtoken().type != semicolonsym)
+		{
 			printparseerror(14);
 			exit(0);
 		}
@@ -310,6 +314,32 @@ void statement()
 	if (getcurrtoken().type == identsym)
 	{
 		int symIdx = findsymbol(getcurrtoken(), 2);
+
+		// not found as an identifier
+		if (symIdx == -1)
+		{
+			if (findsymbol(getcurrtoken(), 1) != findsymbol(getcurrtoken(), 3))
+				printparseerror(18);
+			else
+				printparseerror(19);
+			exit(0);
+		}
+
+		getnexttoken();
+
+		// identifier must be followed by assignment symbol
+		if (getcurrtoken().type != assignsym)
+		{
+			printparseerror(5);
+			exit(0);
+		}
+
+		getnexttoken();
+
+		expression();
+
+		// STO
+		emit(4, level - table[symIdx].level, table[symIdx].addr);
 	}
 	else if (getcurrtoken().type == beginsym)
 	{
@@ -328,6 +358,14 @@ void statement()
 	}
 	else if (getcurrtoken().type == callsym)
 	{
+	}
+}
+
+void expression()
+{
+	if (getcurrtoken().type == subsym)
+	{
+		getnexttoken();
 	}
 }
 

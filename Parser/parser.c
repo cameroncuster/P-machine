@@ -402,7 +402,7 @@ void statement()
 		int jpcIdx = codeIndex;
 
 		// EMIT JPC
-		emit(8, level, 0);
+		emit(8, 0, 0);
 
 		// if symbol must be followed by then symbol
 		if (token.type != thensym)
@@ -420,16 +420,22 @@ void statement()
 		{
 			int jmpIdx = codeIndex;
 			// EMIT JMP
-			emit(7, level, 0);
+			emit(7, 0, 0);
 
 			// JPC/JMP to the end
 			code[jpcIdx].m = codeIndex * 3;
+
+			getnexttoken();
+
 			statement();
+
 			code[jmpIdx].m = codeIndex * 3;
 		}
 		else
+		{
 			// JPC to the end
 			code[jpcIdx].m = codeIndex * 3;
+		}
 	}
 	else if (token.type == whilesym)
 	{

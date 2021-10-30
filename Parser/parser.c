@@ -14,6 +14,7 @@ int cIndex;
 symbol *table;
 int tIndex;
 lexeme *tokens;
+lexeme token;
 int tokenIndex;
 int level;
 
@@ -30,7 +31,6 @@ void term();
 void factor();
 
 // helpers
-lexeme getcurrtoken();
 lexeme getnexttoken();
 void mark();
 int findsymbol(lexeme token, int kind);
@@ -50,6 +50,7 @@ instruction *parse(lexeme *list, int printTable, int printCode)
 	tIndex = 0;
 
 	tokens = list;
+	token = tokens[0];
 	tokenIndex = 0;
 
 	// parse the program
@@ -86,7 +87,7 @@ void program()
 	block();
 
 	// assert period ending
-	if (getcurrtoken().type != periodsym)
+	if (token.type != periodsym)
 	{
 		printparseerror(1);
 		exit(0);
@@ -140,19 +141,19 @@ void block()
 void const_declaration()
 {
 	// declaring constants
-	if (getcurrtoken().type == constsym)
+	if (token.type == constsym)
 	{
 		do {
 			getnexttoken();
 
 			// identifier?
-			if (getcurrtoken().type != identsym)
+			if (token.type != identsym)
 			{
 				printparseerror(2);
 				exit(0);
 			}
 
-			int symidx = multipledeclarationcheck(getcurrtoken());
+			int symidx = multipledeclarationcheck(token);
 
 			// check for multiple declarations
 			if (symidx != -1)
@@ -162,12 +163,12 @@ void const_declaration()
 			}
 
 			// save ident name
-			char *name = getcurrtoken().name;
+			char *name = token.name;
 
 			getnexttoken();
 
 			// must be assigned (const)
-			if (getcurrtoken().type != assignsym)
+			if (token.type != assignsym)
 			{
 				printparseerror(2);
 				exit(0);
@@ -176,24 +177,24 @@ void const_declaration()
 			getnexttoken();
 
 			// must be an integer
-			if (getcurrtoken().type != numbersym)
+			if (token.type != numbersym)
 			{
 				printparseerror(2);
 				exit(0);
 			}
 
-			addToSymbolTable(1, name, getcurrtoken().value, level, 0, 0);
+			addToSymbolTable(1, name, token.value, level, 0, 0);
 
 			getnexttoken();
 
 			// do more declarations
-		} while (getcurrtoken().type == commasym);
+		} while (token.type == commasym);
 
 		// declarations must end with semicolon
-		if (getcurrtoken().type != semicolonsym)
+		if (token.type != semicolonsym)
 		{
 			// if identifier symbol error
-			if (getcurrtoken().type == identsym)
+			if (token.type == identsym)
 			{
 				printparseerror(13);
 				exit(0);
@@ -215,7 +216,7 @@ int var_declaration()
 {
 	int numVars = 0;
 
-	if (getcurrtoken().type == varsym)
+	if (token.type == varsym)
 	{
 		do {
 			// new declaration
@@ -224,13 +225,13 @@ int var_declaration()
 			getnexttoken();
 
 			// variable declaration must lead with identifier
-			if (getcurrtoken().type != identsym)
+			if (token.type != identsym)
 			{
 				printparseerror(3);
 				exit(0);
 			}
 
-			int symidx = multipledeclarationcheck(getcurrtoken());
+			int symidx = multipledeclarationcheck(token);
 
 			// check for multiple declarations
 			if (symidx != -1)
@@ -242,22 +243,22 @@ int var_declaration()
 			// add to symbol table
 			// if outside main (no control information)
 			if (level == 0)
-				addToSymbolTable(2, getcurrtoken().name, 0, level, numVars - 1,
+				addToSymbolTable(2, token.name, 0, level, numVars - 1,
 						0);
 			else
 				// buffer for control information
-				addToSymbolTable(2, getcurrtoken().name, 0, level, numVars + 2,
+				addToSymbolTable(2, token.name, 0, level, numVars + 2,
 						0);
 
 			getnexttoken();
 
-		} while (getcurrtoken().type == commasym);
+		} while (token.type == commasym);
 
 		// declarations must end with semicolon
-		if (getcurrtoken().type != semicolonsym)
+		if (token.type != semicolonsym)
 		{
 			// if identifier symbol error
-			if (getcurrtoken().type == identsym)
+			if (token.type == identsym)
 			{
 				printparseerror(13);
 				exit(0);
@@ -278,17 +279,17 @@ int var_declaration()
 
 void procedure_declaration()
 {
-	while (getcurrtoken().type == procsym)
+	while (token.type == procsym)
 	{
 		getnexttoken();
 
 		// procedure declaration must begin with an identifier
-		if (getcurrtoken().type != identsym) {
+		if (token.type != identsym) {
 			printparseerror(4);
 			exit(0);
 		}
 
-		int symidx = multipledeclarationcheck(getcurrtoken());
+		int symidx = multipledeclarationcheck(token);
 
 		// check for multiple declarations
 		if (symidx != -1)
@@ -298,12 +299,12 @@ void procedure_declaration()
 		}
 
 		// add to symbol table
-		addToSymbolTable(3, getcurrtoken().name, 0, level, 0, 0);
+		addToSymbolTable(3, token.name, 0, level, 0, 0);
 
 		getnexttoken();
 
 		// procedure declarations must be followed by a semicolon symbol
-		if (getcurrtoken().type != semicolonsym)
+		if (token.type != semicolonsym)
 		{
 			printparseerror(14);
 			exit(0);
@@ -315,7 +316,7 @@ void procedure_declaration()
 		block();
 
 		// symbol declarations should close with a semicolon symbol
-		if (getcurrtoken().type != semicolonsym)
+		if (token.type != semicolonsym)
 		{
 			printparseerror(14);
 			exit(0);
@@ -330,14 +331,14 @@ void procedure_declaration()
 
 void statement()
 {
-	if (getcurrtoken().type == identsym)
+	if (token.type == identsym)
 	{
-		int symIdx = findsymbol(getcurrtoken(), 2);
+		int symIdx = findsymbol(token, 2);
 
 		// not found as an identifier
 		if (symIdx == -1)
 		{
-			if (findsymbol(getcurrtoken(), 1) != findsymbol(getcurrtoken(), 3))
+			if (findsymbol(token, 1) != findsymbol(token, 3))
 				printparseerror(18);
 			else
 				printparseerror(19);
@@ -347,7 +348,7 @@ void statement()
 		getnexttoken();
 
 		// identifier must be followed by assignment symbol
-		if (getcurrtoken().type != assignsym)
+		if (token.type != assignsym)
 		{
 			printparseerror(5);
 			exit(0);
@@ -360,19 +361,19 @@ void statement()
 		// STO
 		emit(4, level - table[symIdx].level, table[symIdx].addr);
 	}
-	else if (getcurrtoken().type == beginsym)
+	else if (token.type == beginsym)
 	{
 		// parse statements
 		do {
 			getnexttoken();
 
 			statement();
-		} while (getcurrtoken().type == semicolonsym);
+		} while (token.type == semicolonsym);
 
 		// begin must be closed with end symbol
-		if (getcurrtoken().type != endsym)
+		if (token.type != endsym)
 		{
-			switch (getcurrtoken().type)
+			switch (token.type)
 			{
 				case identsym:
 				case beginsym:
@@ -391,7 +392,7 @@ void statement()
 
 		getnexttoken();
 	}
-	else if (getcurrtoken().type == ifsym)
+	else if (token.type == ifsym)
 	{
 		getnexttoken();
 
@@ -403,7 +404,7 @@ void statement()
 		emit(8, level, 0);
 
 		// if symbol must be followed by then symbol
-		if (getcurrtoken().type != thensym)
+		if (token.type != thensym)
 		{
 			printparseerror(8);
 			exit(0);
@@ -414,7 +415,7 @@ void statement()
 		statement();
 
 		// handle the else statement
-		if (getcurrtoken().type == elsesym)
+		if (token.type == elsesym)
 		{
 			int jmpIdx = cIndex;
 			// EMIT JMP
@@ -429,7 +430,7 @@ void statement()
 			// JPC to the end
 			code[jpcIdx].m = cIndex * 3;
 	}
-	else if (getcurrtoken().type == whilesym)
+	else if (token.type == whilesym)
 	{
 		getnexttoken();
 
@@ -438,7 +439,7 @@ void statement()
 		condition();
 
 		// while symbol must be followed by do symbol
-		if (getcurrtoken().type != dosym)
+		if (token.type != dosym)
 		{
 			printparseerror(9);
 			exit(0);
@@ -458,24 +459,24 @@ void statement()
 
 		code[jpcIdx].m = cIndex * 3;
 	}
-	else if (getcurrtoken().type == readsym)
+	else if (token.type == readsym)
 	{
 		getnexttoken();
 
 		// read symbol must be followed by indentifier symbol
-		if (getcurrtoken().type != identsym)
+		if (token.type != identsym)
 		{
 			printparseerror(6);
 			exit(0);
 		}
 
-		int symIdx = findsymbol(getcurrtoken(), 2);
+		int symIdx = findsymbol(token, 2);
 
 		// variable identifier not found in symbol table
 		if (symIdx == -1)
 		{
 			// identifier is not a variable
-			if (findsymbol(getcurrtoken(), 1) != findsymbol(getcurrtoken(), 3))
+			if (findsymbol(token, 1) != findsymbol(token, 3))
 				printparseerror(6);
 			// identifier is undeclared
 			else
@@ -491,24 +492,24 @@ void statement()
 		// emit STO
 		emit(4, level - table[symIdx].level, table[symIdx].addr);
 	}
-	else if (getcurrtoken().type == writesym)
+	else if (token.type == writesym)
 	{
 		getnexttoken();
 		expression();
 		// emit WRITE
 		emit(9, 0, 1);
 	}
-	else if (getcurrtoken().type == callsym)
+	else if (token.type == callsym)
 	{
 		getnexttoken();
 
-		int symIdx = findsymbol(getcurrtoken(), 3);
+		int symIdx = findsymbol(token, 3);
 
 		// procedure identifier not found in symbol table
 		if (symIdx == -1)
 		{
 			// identifier is not a procedure
-			if (findsymbol(getcurrtoken(), 1) != findsymbol(getcurrtoken(), 2))
+			if (findsymbol(token, 1) != findsymbol(token, 2))
 				printparseerror(7);
 			// identifier is undeclared
 			else
@@ -525,7 +526,7 @@ void statement()
 
 void condition()
 {
-	if (getcurrtoken().type == oddsym)
+	if (token.type == oddsym)
 	{
 		getnexttoken();
 		expression();
@@ -535,42 +536,42 @@ void condition()
 	else
 	{
 		expression();
-		if (getcurrtoken().type == eqlsym)
+		if (token.type == eqlsym)
 		{
 			getnexttoken();
 			expression();
 			// emit EQL
 			emit(2, 0, 8);
 		}
-		else if (getcurrtoken().type == neqsym)
+		else if (token.type == neqsym)
 		{
 			getnexttoken();
 			expression();
 			// emit NEQ
 			emit(2, 0, 9);
 		}
-		else if (getcurrtoken().type == lsssym)
+		else if (token.type == lsssym)
 		{
 			getnexttoken();
 			expression();
 			// emit LSS
 			emit(2, 0, 10);
 		}
-		else if (getcurrtoken().type == leqsym)
+		else if (token.type == leqsym)
 		{
 			getnexttoken();
 			expression();
 			// emit LEQ
 			emit(2, 0, 11);
 		}
-		else if (getcurrtoken().type == gtrsym)
+		else if (token.type == gtrsym)
 		{
 			getnexttoken();
 			expression();
 			// emit GTR
 			emit(2, 0, 12);
 		}
-		else if (getcurrtoken().type == geqsym)
+		else if (token.type == geqsym)
 		{
 			getnexttoken();
 			expression();
@@ -588,7 +589,7 @@ void condition()
 
 void expression()
 {
-	if (getcurrtoken().type == subsym)
+	if (token.type == subsym)
 	{
 		getnexttoken();
 		term();
@@ -596,9 +597,9 @@ void expression()
 		// emit NEG
 		emit(2, 0, 1);
 
-		while (getcurrtoken().type == addsym || getcurrtoken().type == subsym)
+		while (token.type == addsym || token.type == subsym)
 		{
-			if (getcurrtoken().type == addsym)
+			if (token.type == addsym)
 			{
 				getnexttoken();
 				term();
@@ -616,13 +617,13 @@ void expression()
 	}
 	else
 	{
-		if (getcurrtoken().type == addsym)
+		if (token.type == addsym)
 			getnexttoken();
 
 		term();
-		while (getcurrtoken().type == addsym || getcurrtoken().type == subsym)
+		while (token.type == addsym || token.type == subsym)
 		{
-			if (getcurrtoken().type == addsym)
+			if (token.type == addsym)
 			{
 				getnexttoken();
 				term();
@@ -640,10 +641,10 @@ void expression()
 	}
 
 	// expression should not be followed by ), identifer, number, or odd - bad
-	if (getcurrtoken().type == lparensym ||
-			getcurrtoken().type == identsym ||
-			getcurrtoken().type == numbersym ||
-			getcurrtoken().type == oddsym)
+	if (token.type == lparensym ||
+			token.type == identsym ||
+			token.type == numbersym ||
+			token.type == oddsym)
 	{
 		printparseerror(17);
 		exit(0);
@@ -653,18 +654,18 @@ void expression()
 void term()
 {
 	factor();
-	while (getcurrtoken().type == multsym ||
-			getcurrtoken().type == divsym ||
-			getcurrtoken().type == modsym)
+	while (token.type == multsym ||
+			token.type == divsym ||
+			token.type == modsym)
 	{
-		if (getcurrtoken().type == multsym)
+		if (token.type == multsym)
 		{
 			getnexttoken();
 			factor();
 			// emit MUL
 			emit(2, 0, 4);
 		}
-		else if (getcurrtoken().type == divsym)
+		else if (token.type == divsym)
 		{
 			getnexttoken();
 			factor();
@@ -683,16 +684,16 @@ void term()
 
 void factor()
 {
-	if (getcurrtoken().type == identsym)
+	if (token.type == identsym)
 	{
-		int symIdx_var = findsymbol(getcurrtoken(), 2);
-		int symIdx_const = findsymbol(getcurrtoken(), 1);
+		int symIdx_var = findsymbol(token, 2);
+		int symIdx_const = findsymbol(token, 1);
 
 		// identifier is neither a declared variable or a declared constant
 		if (symIdx_var == -1 && symIdx_const == -1)
 		{
 			// identifier is a procedure in an arithmetic expression (incorrect)
-			if (findsymbol(getcurrtoken(), 3) != -1)
+			if (findsymbol(token, 3) != -1)
 				printparseerror(11);
 			// not declared
 			else
@@ -716,13 +717,13 @@ void factor()
 
 		getnexttoken();
 	}
-	else if (getcurrtoken().type == numbersym)
+	else if (token.type == numbersym)
 	{
 		// emit LIT
-		emit(1, 0, getcurrtoken().value);
+		emit(1, 0, token.value);
 		getnexttoken();
 	}
-	else if (getcurrtoken().type == lparensym)
+	else if (token.type == lparensym)
 	{
 		getnexttoken();
 
@@ -730,7 +731,7 @@ void factor()
 		expression();
 
 		// expression must be closed with )
-		if (getcurrtoken().type != rparensym)
+		if (token.type != rparensym)
 		{
 			printparseerror(12);
 			exit(0);
@@ -745,14 +746,9 @@ void factor()
 	}
 }
 
-lexeme getcurrtoken()
-{
-	return tokens[tokenIndex];
-}
-
 lexeme getnexttoken()
 {
-	return tokens[++tokenIndex];
+	return token = tokens[++tokenIndex];
 }
 
 void mark()

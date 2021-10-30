@@ -212,9 +212,43 @@ void const_declaration()
 int var_declaration()
 {
 	int numVars = 0;
+
 	if (getcurrtoken().type == varsym)
 	{
+		do {
+			// new declaration
+			numVars++;
+
+			getnexttoken();
+
+			// variable declaration must lead with identifier
+			if (getcurrtoken().type != identsym) {
+				printparseerror(3);
+				exit(0);
+			}
+
+			// check actual identifier
+			int symidx = multipledeclarationcheck(getnexttoken());
+
+			// check for multiple declarations
+			if (symidx != -1)
+			{
+				printparseerror(18);
+				exit(0);
+			}
+
+			// if outside main (no control information)
+			if (level == 0)
+				addToSymbolTable(2, getcurrtoken().name, 0, level, numVars - 1, 0);
+			else
+				// buffer for control information
+				addToSymbolTable(2, getcurrtoken().name, 0, level, numVars + 2, 0);
+
+			getnexttoken();
+
+		} while (getcurrtoken().type == commasym);
 	}
+
 	return numVars;
 }
 

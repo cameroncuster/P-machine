@@ -10,9 +10,9 @@
 
 // class (global) data
 instruction *code;
-int cIndex;
+int codeIndex;
 symbol *table;
-int tIndex;
+int tableIndex;
 lexeme *tokens;
 lexeme token;
 int tokenIndex;
@@ -45,9 +45,9 @@ instruction *parse(lexeme *list, int printTable, int printCode)
 {
 	// allocate the space for the parsed program
 	code = malloc(MAX_CODE_LENGTH * sizeof(instruction));
-	cIndex = 0;
+	codeIndex = 0;
 	table = malloc(MAX_SYMBOL_COUNT * sizeof(symbol));
-	tIndex = 0;
+	tableIndex = 0;
 
 	tokens = list;
 	token = tokens[0];
@@ -61,7 +61,7 @@ instruction *parse(lexeme *list, int printTable, int printCode)
 	   vm.o THIS LINE IS HOW THE VM KNOWS WHERE THE CODE ENDS
 	   WHEN COPYING IT TO THE PAS
 	 */
-	code[cIndex].opcode = -1;
+	code[codeIndex].opcode = -1;
 
 	// print table if specified
 	if (printTable)
@@ -97,7 +97,7 @@ void program()
 	emit(9, 0, 3);
 
 	// restore CALL destination address
-	for (int line = 0; line < cIndex; line++)
+	for (int line = 0; line < codeIndex; line++)
 		if (code[line].opcode == 5)
 			code[line].m = table[code[line].m].addr;
 
@@ -110,7 +110,7 @@ void block()
 	// next level (new block)
 	level++;
 
-	int procedure_idx = tIndex - 1;
+	int procedure_idx = tableIndex - 1;
 
 	// declarations
 	const_declaration();
@@ -118,7 +118,7 @@ void block()
 	procedure_declaration();
 
 	// addressing
-	table[procedure_idx].addr = cIndex * 3;
+	table[procedure_idx].addr = codeIndex * 3;
 
 	if (level == 0)
 		// INC to main
@@ -140,6 +140,7 @@ void block()
 
 void const_declaration()
 {
+	char name[12];
 	// declaring constants
 	if (token.type == constsym)
 	{
@@ -163,7 +164,7 @@ void const_declaration()
 			}
 
 			// save ident name
-			char *name = token.name;
+			strcpy(name, token.name);
 
 			getnexttoken();
 
@@ -398,7 +399,7 @@ void statement()
 
 		condition();
 
-		int jpcIdx = cIndex;
+		int jpcIdx = codeIndex;
 
 		// EMIT JPC
 		emit(8, level, 0);
@@ -417,24 +418,24 @@ void statement()
 		// handle the else statement
 		if (token.type == elsesym)
 		{
-			int jmpIdx = cIndex;
+			int jmpIdx = codeIndex;
 			// EMIT JMP
 			emit(7, level, 0);
 
 			// JPC/JMP to the end
-			code[jpcIdx].m = cIndex * 3;
+			code[jpcIdx].m = codeIndex * 3;
 			statement();
-			code[jmpIdx].m = cIndex * 3;
+			code[jmpIdx].m = codeIndex * 3;
 		}
 		else
 			// JPC to the end
-			code[jpcIdx].m = cIndex * 3;
+			code[jpcIdx].m = codeIndex * 3;
 	}
 	else if (token.type == whilesym)
 	{
 		getnexttoken();
 
-		int loopIdx = cIndex;
+		int loopIdx = codeIndex;
 
 		condition();
 
@@ -447,7 +448,7 @@ void statement()
 
 		getnexttoken();
 
-		int jpcIdx = cIndex;
+		int jpcIdx = codeIndex;
 
 		// emit JPC
 		emit(8, 0, 0);
@@ -457,7 +458,7 @@ void statement()
 		// emit JMP
 		emit(7, 0, loopIdx * 3);
 
-		code[jpcIdx].m = cIndex * 3;
+		code[jpcIdx].m = codeIndex * 3;
 	}
 	else if (token.type == readsym)
 	{
@@ -753,7 +754,7 @@ lexeme getnexttoken()
 
 void mark()
 {
-	for (int i = tIndex - 1; i >= 0; i--)
+	for (int i = tableIndex - 1; i >= 0; i--)
 	{
 		if (!table[i].mark)
 		{
@@ -769,7 +770,7 @@ int findsymbol(lexeme token, int kind)
 {
 	int symIdx = -1, mxLevel = -1;
 
-	for (int i = tIndex - 1; i >= 0; i--)
+	for (int i = tableIndex - 1; i >= 0; i--)
 	{
 		if (table[i].mark == 0 &&
 				table[i].kind == kind &&
@@ -786,7 +787,7 @@ int findsymbol(lexeme token, int kind)
 
 int multipledeclarationcheck(lexeme token)
 {
-	for (int i = tIndex - 1; i >= 0; i--)
+	for (int i = tableIndex - 1; i >= 0; i--)
 	{
 		if (table[i].mark == 0 &&
 				table[i].level == level &&
@@ -798,21 +799,21 @@ int multipledeclarationcheck(lexeme token)
 
 void emit(int opcode, int l, int m)
 {
-	code[cIndex].opcode = opcode;
-	code[cIndex].l = l;
-	code[cIndex].m = m;
-	cIndex++;
+	code[codeIndex].opcode = opcode;
+	code[codeIndex].l = l;
+	code[codeIndex].m = m;
+	codeIndex++;
 }
 
 void addToSymbolTable(int k, char n[], int v, int l, int a, int m)
 {
-	table[tIndex].kind = k;
-	strcpy(table[tIndex].name, n);
-	table[tIndex].val = v;
-	table[tIndex].level = l;
-	table[tIndex].addr = a;
-	table[tIndex].mark = m;
-	tIndex++;
+	table[tableIndex].kind = k;
+	strcpy(table[tableIndex].name, n);
+	table[tableIndex].val = v;
+	table[tableIndex].level = l;
+	table[tableIndex].addr = a;
+	table[tableIndex].mark = m;
+	tableIndex++;
 }
 
 
@@ -892,7 +893,7 @@ void printsymboltable()
 	printf("Symbol Table:\n");
 	printf("Kind | Name        | Value | Level | Address | Mark\n");
 	printf("---------------------------------------------------\n");
-	for (i = 0; i < tIndex; i++)
+	for (i = 0; i < tableIndex; i++)
 		printf("%4d | %11s | %5d | %5d | %5d | %5d\n", table[i].kind, table[i].name, table[i].val, table[i].level, table[i].addr, table[i].mark);
 
 	free(table);
@@ -903,7 +904,7 @@ void printassemblycode()
 {
 	int i;
 	printf("Line\tOP Code\tOP Name\tL\tM\n");
-	for (i = 0; i < cIndex; i++)
+	for (i = 0; i < codeIndex; i++)
 	{
 		printf("%d\t", i);
 		printf("%d\t", code[i].opcode);

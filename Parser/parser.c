@@ -254,6 +254,25 @@ int var_declaration()
 		} while (getcurrtoken().type == commasym);
 	}
 
+	// declarations must end with semicolon
+	if (getcurrtoken().type != semicolonsym)
+	{
+		// if identifier symbol error
+		if (getcurrtoken().type == identsym)
+		{
+			printparseerror(13);
+			exit(0);
+		}
+		// other error
+		else
+		{
+			printparseerror(14);
+			exit(0);
+		}
+	}
+
+	getnexttoken();
+
 	return numVars;
 }
 

@@ -26,9 +26,10 @@ void procedure_declaration();
 void statement();
 
 // helpers
-void mark();
 lexeme getcurrtoken();
 lexeme getnexttoken();
+void mark();
+int findsymbol(lexeme token);
 int multipledeclarationcheck(lexeme token);
 void emit(int opcode, int l, int m);
 void addToSymbolTable(int k, char n[], int v, int l, int a, int m);
@@ -237,6 +238,7 @@ int var_declaration()
 				exit(0);
 			}
 
+			// add to symbol table
 			// if outside main (no control information)
 			if (level == 0)
 				addToSymbolTable(2, getcurrtoken().name, 0, level, numVars - 1, 0);
@@ -256,6 +258,50 @@ void procedure_declaration()
 {
 	while (getcurrtoken().type == procsym)
 	{
+		getnexttoken();
+
+		// procedure declaration must begin with an identifier
+		if (getcurrtoken().type != identsym) {
+			printparseerror(4);
+			exit(0);
+		}
+
+		// check actual identifier
+		int symidx = multipledeclarationcheck(getnexttoken());
+
+		// check for multiple declarations
+		if (symidx != -1)
+		{
+			printparseerror(18);
+			exit(0);
+		}
+
+		// add to symbol table
+		addToSymbolTable(3, getcurrtoken().name, 0, level, 0, 0);
+
+		getnexttoken();
+
+		// procedure declarations must be followed by a semicolon symbol
+		if (getcurrtoken().type != semicolonsym) {
+			printparseerror(14);
+			exit(0);
+		}
+
+		getnexttoken();
+
+		// parse the new block (procedure)
+		block();
+
+		// symbol declarations should close with a semicolon symbol
+		if (getcurrtoken().type != semicolonsym) {
+			printparseerror(14);
+			exit(0);
+		}
+
+		getnexttoken();
+
+		// emit RTN
+		emit(0, level, 2);
 	}
 }
 
@@ -284,6 +330,16 @@ void statement()
 	}
 }
 
+lexeme getcurrtoken()
+{
+	return tokens[tokenIndex];
+}
+
+lexeme getnexttoken()
+{
+	return tokens[++tokenIndex];
+}
+
 void mark()
 {
 	for (int i = tIndex - 1; i >= 0; i--)
@@ -298,14 +354,23 @@ void mark()
 	}
 }
 
-lexeme getcurrtoken()
+int findsymbol(lexeme token)
 {
-	return tokens[tokenIndex];
-}
+	int symIdx = -1, mxLevel = -1;
 
-lexeme getnexttoken()
-{
-	return tokens[++tokenIndex];
+	for (int i = tIndex - 1; i >= 0; i--)
+	{
+		if (table[i].mark == 0 &&
+				table[i].kind == token.type &&
+				strcmp(token.name, table[i].name) == 0 &&
+				table[i].level > mxLevel)
+		{
+			symIdx = i;
+			mxLevel = table[i].level;
+		}
+	}
+
+	return symIdx;
 }
 
 int multipledeclarationcheck(lexeme token)

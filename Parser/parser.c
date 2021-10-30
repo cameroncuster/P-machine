@@ -24,8 +24,8 @@ void const_declaration();
 int var_declaration();
 void procedure_declaration();
 void statement();
-void expression();
 void condition();
+void expression();
 
 // helpers
 lexeme getcurrtoken();
@@ -505,24 +505,74 @@ void statement()
 	}
 }
 
-void expression()
-{
-	if (getcurrtoken().type == subsym)
-	{
-		getnexttoken();
-	}
-}
-
 void condition()
 {
 	if (getcurrtoken().type == oddsym)
 	{
 		getnexttoken();
 		expression();
+		// emit ODD
+		emit(2, 0, 6);
 	}
 	else
 	{
 		expression();
+		if (getcurrtoken().type == eqlsym)
+		{
+			getnexttoken();
+			expression();
+			// emit EQL
+			emit(2, 0, 8);
+		}
+		else if (getcurrtoken().type == neqsym)
+		{
+			getnexttoken();
+			expression();
+			// emit NEQ
+			emit(2, 0, 9);
+		}
+		else if (getcurrtoken().type == lsssym)
+		{
+			getnexttoken();
+			expression();
+			// emit LSS
+			emit(2, 0, 10);
+		}
+		else if (getcurrtoken().type == leqsym)
+		{
+			getnexttoken();
+			expression();
+			// emit LEQ
+			emit(2, 0, 11);
+		}
+		else if (getcurrtoken().type == gtrsym)
+		{
+			getnexttoken();
+			expression();
+			// emit GTR
+			emit(2, 0, 12);
+		}
+		else if (getcurrtoken().type == geqsym)
+		{
+			getnexttoken();
+			expression();
+			// emit GEQ
+			emit(2, 0, 13);
+		}
+		else
+		{
+			// relational operator missing from condition
+			printparseerror(10);
+			exit(0);
+		}
+	}
+}
+
+void expression()
+{
+	if (getcurrtoken().type == subsym)
+	{
+		getnexttoken();
 	}
 }
 

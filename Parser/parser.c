@@ -252,26 +252,26 @@ int var_declaration()
 			getnexttoken();
 
 		} while (getcurrtoken().type == commasym);
-	}
 
-	// declarations must end with semicolon
-	if (getcurrtoken().type != semicolonsym)
-	{
-		// if identifier symbol error
-		if (getcurrtoken().type == identsym)
+		// declarations must end with semicolon
+		if (getcurrtoken().type != semicolonsym)
 		{
-			printparseerror(13);
-			exit(0);
+			// if identifier symbol error
+			if (getcurrtoken().type == identsym)
+			{
+				printparseerror(13);
+				exit(0);
+			}
+			// other error
+			else
+			{
+				printparseerror(14);
+				exit(0);
+			}
 		}
-		// other error
-		else
-		{
-			printparseerror(14);
-			exit(0);
-		}
-	}
 
-	getnexttoken();
+		getnexttoken();
+	}
 
 	return numVars;
 }
@@ -324,7 +324,7 @@ void procedure_declaration()
 		getnexttoken();
 
 		// emit RTN
-		emit(0, level, 2);
+		emit(2, 0, 0);
 	}
 }
 

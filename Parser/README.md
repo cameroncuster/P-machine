@@ -13,7 +13,7 @@
 <filename>.txt : input file name, for e.g. input.txt
 
 Example Execution:
-./a.out input.txt –l –a –v Print all types of output to the console
-./a.out input.txt –v Print only the VM execution trace to the console
-./a.out input.txt Print  nothing  to  the  console  except  for  program  read
+./a.out input.txt –l –a –v Print all types of output to the console \\
+./a.out input.txt –v Print only the VM execution trace to the console \\
+./a.out input.txt Print  nothing  to  the  console  except  for  program  read \\
 and write instructions.

@@ -307,7 +307,7 @@ void procedure_declaration()
 		// procedure declarations must be followed by a semicolon symbol
 		if (token.type != semicolonsym)
 		{
-			printparseerror(14);
+			printparseerror(4);
 			exit(0);
 		}
 
@@ -339,8 +339,10 @@ void statement()
 		// not found as an identifier
 		if (symIdx == -1)
 		{
+			// not a variable
 			if (findsymbol(token, 1) != findsymbol(token, 3))
-				printparseerror(18);
+				printparseerror(6);
+			// undeclared
 			else
 				printparseerror(19);
 			exit(0);
@@ -383,9 +385,11 @@ void statement()
 				case readsym:
 				case writesym:
 				case callsym:
-					printparseerror(100); // TODO: FIND ERROR CODE
+					// must separate with semicolon symbol
+					printparseerror(15);
 					exit(0);
 				default:
+					// begin must be followed by end
 					printparseerror(16);
 					exit(0);
 			}
@@ -399,17 +403,17 @@ void statement()
 
 		condition();
 
-		int jpcIdx = codeIndex;
-
-		// EMIT JPC
-		emit(8, 0, 0);
-
 		// if symbol must be followed by then symbol
 		if (token.type != thensym)
 		{
 			printparseerror(8);
 			exit(0);
 		}
+
+		int jpcIdx = codeIndex;
+
+		// EMIT JPC
+		emit(8, 0, 0);
 
 		getnexttoken();
 
@@ -509,6 +513,12 @@ void statement()
 	else if (token.type == callsym)
 	{
 		getnexttoken();
+
+		if (token.type != identsym)
+		{
+			printparseerror(7);
+			exit(0);
+		}
 
 		int symIdx = findsymbol(token, 3);
 
@@ -647,8 +657,13 @@ void expression()
 		}
 	}
 
-	// expression should not be followed by ), identifer, number, or odd - bad
-	if (token.type == lparensym ||
+	// expression should not be followed by these symbols
+	if (token.type == addsym ||
+			token.type == subsym ||
+			token.type == multsym ||
+			token.type == divsym ||
+			token.type == modsym ||
+			token.type == lparensym ||
 			token.type == identsym ||
 			token.type == numbersym ||
 			token.type == oddsym)

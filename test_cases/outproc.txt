@@ -1,0 +1,70 @@
+Symbol Table:
+Kind | Name        | Value | Level | Address | Mark
+---------------------------------------------------
+   3 |        main |     0 |     0 |   153 |     1
+   3 |      invert |     0 |     0 |     3 |     1
+   2 |       input |     0 |     1 |     3 |     1
+   2 |      result |     0 |     1 |     4 |     1
+   2 |         rem |     0 |     1 |     5 |     1
+   3 |       power |     0 |     0 |    84 |     1
+   2 |        base |     0 |     1 |     3 |     1
+   2 |         exp |     0 |     1 |     4 |     1
+   2 |         res |     0 |     1 |     5 |     1
+Line	OP Code	OP Name	L	M
+0	7	JMP	0	153
+1	6	INC	0	6
+2	1	LIT	0	0
+3	4	STO	0	4
+4	9	RED	0	2
+5	4	STO	0	3
+6	3	LOD	0	3
+7	1	LIT	0	0
+8	2	NEQ	0	9
+9	8	JPC	0	75
+10	3	LOD	0	3
+11	1	LIT	0	10
+12	2	MOD	0	7
+13	4	STO	0	5
+14	3	LOD	0	4
+15	1	LIT	0	10
+16	2	MUL	0	4
+17	3	LOD	0	5
+18	2	ADD	0	2
+19	4	STO	0	4
+20	3	LOD	0	3
+21	1	LIT	0	10
+22	2	DIV	0	5
+23	4	STO	0	3
+24	7	JMP	0	18
+25	3	LOD	0	4
+26	9	WRT	0	1
+27	2	RTN	0	0
+28	6	INC	0	6
+29	9	RED	0	2
+30	4	STO	0	3
+31	9	RED	0	2
+32	4	STO	0	4
+33	1	LIT	0	1
+34	4	STO	0	5
+35	3	LOD	0	4
+36	1	LIT	0	0
+37	2	GTR	0	12
+38	8	JPC	0	144
+39	3	LOD	0	5
+40	3	LOD	0	3
+41	2	MUL	0	4
+42	4	STO	0	5
+43	3	LOD	0	4
+44	1	LIT	0	1
+45	2	SUB	0	3
+46	4	STO	0	4
+47	7	JMP	0	105
+48	3	LOD	0	5
+49	9	WRT	0	1
+50	2	RTN	0	0
+51	6	INC	0	0
+52	5	CAL	0	3
+53	5	CAL	0	84
+54	9	HAL	0	3
+Please Enter an Integer: Top of Stack Value: 54321
+Please Enter an Integer: Please Enter an Integer: Top of Stack Value: 1024

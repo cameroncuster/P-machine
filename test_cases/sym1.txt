@@ -1,0 +1,8 @@
+const a := 1, b := 2, c := 5, d := 10, e := 15;
+var v, w, x, y, z;
+procedure alpha;;
+procedure beta;;
+procedure gamma;;
+begin
+    v := a + b + c
+end.

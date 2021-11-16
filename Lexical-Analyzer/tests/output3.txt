@@ -1,1 +1,0 @@
-Lexical Analyzer Error: Excessive Identifier Length

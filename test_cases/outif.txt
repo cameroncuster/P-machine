@@ -1,0 +1,47 @@
+Symbol Table:
+Kind | Name        | Value | Level | Address | Mark
+---------------------------------------------------
+   3 |        main |     0 |     0 |     3 |     1
+   1 |           a |     2 |     0 |     0 |     1
+   1 |           b |     3 |     0 |     0 |     1
+   1 |           c |     5 |     0 |     0 |     1
+   2 |           x |     0 |     0 |     0 |     1
+Line	OP Code	OP Name	L	M
+0	7	JMP	0	3
+1	6	INC	0	1
+2	1	LIT	0	2
+3	1	LIT	0	3
+4	2	MUL	0	4
+5	1	LIT	0	5
+6	2	MUL	0	4
+7	4	STO	0	0
+8	3	LOD	0	0
+9	2	ODD	0	6
+10	8	JPC	0	48
+11	3	LOD	0	0
+12	1	LIT	0	1
+13	2	SUB	0	3
+14	4	STO	0	0
+15	7	JMP	0	78
+16	3	LOD	0	0
+17	1	LIT	0	2
+18	2	MOD	0	7
+19	1	LIT	0	0
+20	2	NEQ	0	9
+21	8	JPC	0	78
+22	3	LOD	0	0
+23	1	LIT	0	3
+24	2	MUL	0	4
+25	4	STO	0	0
+26	1	LIT	0	5
+27	1	LIT	0	3
+28	2	SUB	0	3
+29	1	LIT	0	2
+30	2	EQL	0	8
+31	8	JPC	0	105
+32	1	LIT	0	1
+33	4	STO	0	0
+34	7	JMP	0	111
+35	1	LIT	0	0
+36	4	STO	0	0
+37	9	HAL	0	3

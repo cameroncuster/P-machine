@@ -90,8 +90,10 @@ void execute_program(instruction *code, int printFlag) {
 	int SP = MAX_PAS_LENGTH;	// Stack Pointer - Points to top of stack
 
 	// output header and initial values
-	printf("\t\t\t\tPC\tBP\tSP\tDP\tdata\n");
-	printf("Initial values:\t\t\t%d\t%d\t%d\t%d\n", PC, BP, SP, DP);
+	if (printFlag) {
+		printf("\t\t\t\tPC\tBP\tSP\tDP\tdata\n");
+		printf("Initial values:\t\t\t%d\t%d\t%d\t%d\n", PC, BP, SP, DP);
+	}
 
 	int halt_flag = 1;
 	while (halt_flag == 1) {
@@ -383,10 +385,12 @@ void execute_program(instruction *code, int printFlag) {
 		}
 
 		// print the state of the executing program
-		if (IR.opcode == 2)
-			print_execution(line, opr_opnames[IR.m], IR, PC, BP, SP, DP, pas,
-					GP);
-		else
-			print_execution(line, opnames[IR.opcode], IR, PC, BP, SP, DP, pas, GP);
+		if (printFlag) {
+			if (IR.opcode == 2)
+				print_execution(line, opr_opnames[IR.m], IR, PC, BP, SP, DP, pas,
+						GP);
+			else
+				print_execution(line, opnames[IR.opcode], IR, PC, BP, SP, DP, pas, GP);
+		}
 	}
 }

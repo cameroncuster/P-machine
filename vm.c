@@ -1,4 +1,3 @@
-// Student Name: Cameron Custer
 #include <stdio.h>
 #include "compiler.h"
 

@@ -1,9 +1,3 @@
-/*
-	This is the header file for the UCF Fall 2021 Systems Software Project.
-	If you choose to alter this, you MUST make a note of that in your
-	readme file, otherwise you will lose 5 points.
-*/
-
 typedef enum token_type {
 	constsym = 1, varsym, procsym, beginsym, endsym, whilesym, dosym,
 	ifsym, thensym, elsesym, callsym, writesym, readsym, identsym,

@@ -56,11 +56,6 @@ instruction *parse(lexeme *list, int printTable, int printCode)
 	// parse the program
 	program();
 
-	/* this line is EXTREMELY IMPORTANT, you MUST uncomment it
-	   when you test your code otherwise IT WILL SEGFAULT in
-	   vm.o THIS LINE IS HOW THE VM KNOWS WHERE THE CODE ENDS
-	   WHEN COPYING IT TO THE PAS
-	 */
 	code[codeIndex].opcode = -1;
 
 	// print table if specified

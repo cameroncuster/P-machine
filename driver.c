@@ -1,9 +1,3 @@
-/*
-	This is the driver for the UCF Fall 2021 Systems Software Project
-	If you choose to alter this, you MUST make a note of that in your
-	readme file, otherwise you will lose 5 points.
-*/
-
 #include <stdlib.h>
 #include <stdio.h>
 #include "compiler.h"
@@ -68,9 +62,9 @@ int main(int argc, char *argv[])
 	code = parse(list, symbols, codes);
 	if (code == NULL)
 	{
-	 	free(input);
-	 	free(list);
-	 	return 0;
+		free(input);
+		free(list);
+		return 0;
 	}
 
 	execute_program(code, outputs);
